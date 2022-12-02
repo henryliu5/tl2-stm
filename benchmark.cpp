@@ -14,7 +14,7 @@ using std::chrono::duration;
 using std::chrono::milliseconds;
 
 /**
- * @brief 
+ * @brief Benchmarking for RB tree
  * 
  * @param totalOps Total operations to benchmark
  * @param keyMin Min value in key range
@@ -24,7 +24,6 @@ using std::chrono::milliseconds;
  * @param gets Proportion of gets
  */
 void benchmark(int totalOps, int keyMin, int keyMax, double puts, double deletes, double gets){
-    // RedBlackTree rb;
     RBTree rb;
     auto t1 = high_resolution_clock::now();
     for(int i = 0; i < totalOps; i++){

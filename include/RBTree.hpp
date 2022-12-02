@@ -125,16 +125,14 @@ class RBTree {
 
     void swapColors(Node* x1, Node* x2)
     {
-        COLOR temp;
-        temp = x1->color;
+        COLOR temp = x1->color;
         x1->color = x2->color;
         x2->color = temp;
     }
 
     void swapValues(Node* u, Node* v)
     {
-        int temp;
-        temp = u->val;
+        int temp = u->val;
         u->val = v->val;
         v->val = temp;
     }

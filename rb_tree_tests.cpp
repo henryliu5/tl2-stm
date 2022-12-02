@@ -82,6 +82,7 @@ void smallSimple(){
 }
 
 int main(){
+    // RB Tree tests
     smallSimple();
     largeRand();
 
