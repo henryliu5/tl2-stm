@@ -5,4 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(RB_TREE Red)
 set(SOURCE_FILES main.cpp RedBlackTree.cpp)
-add_executable(test_tree ${SOURCE_FILES})
+set(TEST_FILES rb_tree_tests.cpp RedBlackTree.cpp)
+
+add_executable(main ${SOURCE_FILES})
+add_executable(test_tree ${TEST_FILES})
