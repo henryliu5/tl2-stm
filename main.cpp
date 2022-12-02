@@ -16,6 +16,6 @@ int main()
     bst.printTree();
     cout << endl
          << "After deleting" << endl;
-    bst.deleteVal(40);
+    bst.deleteKey(40);
     bst.printTree();
 }

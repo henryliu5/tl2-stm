@@ -32,7 +32,7 @@ private:
     void preOrderHelper(Node* node)
     {
         if (node != TNULL) {
-            cout << node->data << " ";
+            // cout << node->data << " ";
             list_res.push_back(node->data);
             preOrderHelper(node->left);
             preOrderHelper(node->right);
@@ -44,7 +44,7 @@ private:
     {
         if (node != TNULL) {
             inOrderHelper(node->left);
-            cout << node->data << " ";
+            // cout << node->data << " ";
             list_res.push_back(node->data);
             inOrderHelper(node->right);
         }
@@ -56,7 +56,7 @@ private:
         if (node != TNULL) {
             postOrderHelper(node->left);
             postOrderHelper(node->right);
-            cout << node->data << " ";
+            // cout << node->data << " ";
             list_res.push_back(node->data);
         }
     }
@@ -147,7 +147,7 @@ private:
         v->parent = u->parent;
     }
 
-    void deleteNodeHelper(Node* node, int key)
+    bool deleteNodeHelper(Node* node, int key)
     {
         Node* z = TNULL;
         Node* x;
@@ -165,8 +165,8 @@ private:
         }
 
         if (z == TNULL) {
-            cout << "Key not found in the tree" << endl;
-            return;
+            // cout << "Key not found in the tree" << endl;
+            return false;
         }
 
         y = z;
@@ -198,6 +198,7 @@ private:
         if (y_original_color == 0) {
             deleteFix(x);
         }
+        return true;
     }
 
     // For balancing the tree after insertion
@@ -391,9 +392,9 @@ public:
         return list_res;
     }
 
-    Node* searchTree(int k)
+    bool contains(int k)
     {
-        return searchTreeHelper(this->root, k);
+        return searchTreeHelper(this->root, k) != TNULL;
     }
 
     // Inserting a node
@@ -447,9 +448,16 @@ public:
         return this->root;
     }
 
-    void deleteVal(int data)
+    /**
+     * @brief Delete key from RB tree
+     * 
+     * @param data value to remove
+     * @return true if key was found
+     * @return false if key was not found
+     */
+    bool deleteKey(int data)
     {
-        deleteNodeHelper(this->root, data);
+        return deleteNodeHelper(this->root, data);
     }
 
     void printTree()
