@@ -3,17 +3,14 @@ using namespace std;
 
 int main()
 {
-    RBTree bst;
-    bst.insert(55);
-    bst.insert(40);
-    bst.insert(65);
-    bst.insert(60);
-    bst.insert(75);
-    bst.insert(57);
+    RBTree rb;
+    rb.insert(100);
+    rb.insert(101);
+    rb.insert(100);
 
-    bst.printTree();
+    // rb.printTree();
+    rb.deleteKey(100);
     cout << endl
          << "After deleting" << endl;
-    bst.deleteKey(40);
-    bst.printTree();
+    // rb.printTree();
 }
