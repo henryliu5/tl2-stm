@@ -1,11 +1,11 @@
 // Red black tree implementation from https://www.programiz.com/dsa/deletion-from-a-red-black-tree
 
-#include "include/RedBlackTree.hpp"
+#include "include/RBTree.hpp"
 using namespace std;
 
 int main()
 {
-    RedBlackTree bst;
+    RBTree bst;
     bst.insert(55);
     bst.insert(40);
     bst.insert(65);

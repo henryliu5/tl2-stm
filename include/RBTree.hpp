@@ -1,5 +1,5 @@
-#ifndef RED_BLACK_TREE_HPP
-#define RED_BLACK_TREE_HPP
+#ifndef RB_TREE_HPP
+#define RB_TREE_HPP
 #include <iostream>
 #include <vector>
 
@@ -13,7 +13,7 @@ struct Node {
 
 using namespace std;
 
-class RedBlackTree {
+class RBTree {
 private:
     Node* root;
     Node* TNULL;
@@ -28,17 +28,6 @@ private:
         node->color = 0;
     }
 
-    // Preorder
-    void preOrderHelper(Node* node)
-    {
-        if (node != TNULL) {
-            // cout << node->data << " ";
-            list_res.push_back(node->data);
-            preOrderHelper(node->left);
-            preOrderHelper(node->right);
-        }
-    }
-
     // Inorder
     void inOrderHelper(Node* node)
     {
@@ -47,17 +36,6 @@ private:
             // cout << node->data << " ";
             list_res.push_back(node->data);
             inOrderHelper(node->right);
-        }
-    }
-
-    // Post order
-    void postOrderHelper(Node* node)
-    {
-        if (node != TNULL) {
-            postOrderHelper(node->left);
-            postOrderHelper(node->right);
-            // cout << node->data << " ";
-            list_res.push_back(node->data);
         }
     }
 
@@ -282,35 +260,6 @@ private:
         return node;
     }
 
-    Node* successor(Node* x)
-    {
-        if (x->right != TNULL) {
-            return minimum(x->right);
-        }
-
-        Node* y = x->parent;
-        while (y != TNULL && x == y->right) {
-            x = y;
-            y = y->parent;
-        }
-        return y;
-    }
-
-    Node* predecessor(Node* x)
-    {
-        if (x->left != TNULL) {
-            return maximum(x->left);
-        }
-
-        Node* y = x->parent;
-        while (y != TNULL && x == y->left) {
-            x = y;
-            y = y->parent;
-        }
-
-        return y;
-    }
-
     void leftRotate(Node* x)
     {
         Node* y = x->right;
@@ -357,7 +306,7 @@ private:
     }
 
 public:
-    RedBlackTree()
+    RBTree()
     {
         TNULL = new Node;
         TNULL->color = 0;
@@ -371,24 +320,10 @@ public:
         return sizeHelper(this->root);
     }
 
-    vector<int> preorder()
-    {
-        list_res.clear();
-        preOrderHelper(this->root);
-        return list_res;
-    }
-
     vector<int> inorder()
     {
         list_res.clear();
         inOrderHelper(this->root);
-        return list_res;
-    }
-
-    vector<int> postorder()
-    {
-        list_res.clear();
-        postOrderHelper(this->root);
         return list_res;
     }
 

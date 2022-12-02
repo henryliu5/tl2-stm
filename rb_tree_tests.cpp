@@ -1,4 +1,4 @@
-#include "include/RedBlackTree.hpp"
+#include "include/RBTree.hpp"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -8,7 +8,7 @@
 using namespace std;
 int failures = 0;
 
-void checkOrderAndSize(unordered_set<int>& s, RedBlackTree& rb){
+void checkOrderAndSize(unordered_set<int>& s, RBTree& rb){
     // See if the size is right
     if(s.size() != rb.size()){
         // Should be some duplicates
@@ -28,7 +28,7 @@ void largeRand(){
     // Do a bunch of random insertions
     cout << "Starting large rand" << endl;
     unordered_set<int> s;
-    RedBlackTree rb;
+    RBTree rb;
     int N = 100000;
     for(int i = 0; i < N; i++){
         int val = rand() % N;
@@ -61,7 +61,7 @@ void largeRand(){
 }
 
 void smallSimple(){
-    RedBlackTree rb;
+    RBTree rb;
     rb.insert(5);
     rb.insert(3);
     rb.insert(-1);
