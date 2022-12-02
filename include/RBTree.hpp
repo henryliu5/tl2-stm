@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+// Red black tree implementation based on https://www.programiz.com/dsa/deletion-from-a-red-black-tree
 struct Node {
     int data;
     Node* parent;

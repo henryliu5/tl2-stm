@@ -1,5 +1,3 @@
-// Red black tree implementation from https://www.programiz.com/dsa/deletion-from-a-red-black-tree
-
 #include "include/RBTree.hpp"
 using namespace std;
 
