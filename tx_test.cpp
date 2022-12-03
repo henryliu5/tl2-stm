@@ -6,12 +6,23 @@
 void hashMap()
 {
     HashMap m(10000);
+    TxBegin();
     m.put(1, 1000);
     int64_t res;
     m.get(1, res);
+    cout << LOAD(res) << endl;
+
+    m.put(2, 100);
+    m.get(2, res);
+    TxEnd();
     cout << res << endl;
-    m.remove(1);
-    m.remove(0);
+    
+    cout << endl;
+    int64_t res2;
+    cout << m.get(1, res2) << endl;
+    cout << "after commit: " << res2 << endl;
+    cout << m.get(2, res2) << endl;
+    cout << "after commit: " << res2 << endl;
     cout << "num loads: " << _my_thread.numLoads << " num stores: " << _my_thread.numStores << endl;
 }
 

@@ -61,13 +61,13 @@ public:
     //     delete [] table;
     // }
 
-    bool get(const int64_t &key, int64_t &value) {
+    bool get(const int64_t &key, int64_t& value) {
         unsigned long hashValue = key % table_size;
         HashNode* entry = (HashNode*) LOAD(table[hashValue]);
 
         while (entry != NULL) {
             if (entry->getKey() == key) {
-                value = entry->getValue();
+                STORE(value, entry->getValue());
                 return true;
             }
             entry = entry->getNext();
@@ -89,6 +89,7 @@ public:
             entry = new HashNode(key, value);
             if (prev == NULL) {
                 // insert as first bucket
+                cout << "inserting at first bucket" << endl;
                 STORE(table[hashValue], entry);
             } else {
                 prev->setNext(entry);
