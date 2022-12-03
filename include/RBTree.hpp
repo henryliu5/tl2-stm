@@ -10,7 +10,7 @@ enum COLOR { RED, BLACK };
 
 class Node {
 public:
-    int val;
+    int64_t val;
     COLOR color;
     Node *left, *right, *parent;
 
@@ -132,7 +132,7 @@ class RBTree {
 
     void swapValues(Node* u, Node* v)
     {
-        int temp = u->val;
+        int64_t temp = u->val;
         u->val = v->val;
         v->val = temp;
     }
@@ -360,12 +360,12 @@ class RBTree {
         inorderHelp(x->right, v);
     }
 
-    int sizeHelp(Node* n){
+    size_t sizeHelp(Node* n){
         if(!n) return 0;
         return 1 + sizeHelp(n->left) + sizeHelp(n->right);
     }
 
-    bool containsHelp(Node* n, int key){
+    bool containsHelp(Node* n, int64_t key){
         if(!n) return false;
         if(n->val == key){
             return true;
@@ -386,7 +386,7 @@ public:
     // searches for given value
     // if found returns the node (used for delete)
     // else returns the last node while traversing (used in insert)
-    Node* search(int n)
+    Node* search(int64_t n)
     {
         Node* temp = root;
         while (temp != NULL) {
@@ -409,7 +409,7 @@ public:
     }
 
     // inserts the given value to tree
-    void insert(int n)
+    void insert(int64_t n)
     {
         Node* newNode = new Node(n);
         if (root == NULL) {
@@ -442,13 +442,13 @@ public:
     }
 
     // utility function that deletes the node with given value
-    bool deleteKey(int n)
+    bool deleteKey(int64_t n)
     {
         if (root == NULL)
             // Tree is empty
             return false;
 
-        Node *v = search(n), *u;
+        Node *v = search(n);
 
         if (v->val != n) {
             // cout << "No node found to delete with value:" << n << endl;
@@ -465,7 +465,7 @@ public:
         return v;
     }
 
-    int size(){
+    size_t size(){
         return sizeHelp(root);
     }
 

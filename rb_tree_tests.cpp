@@ -41,7 +41,7 @@ void largeRand(){
     for(int i = 0; i < N / 10; i++){
         int val = rand() % N;
         bool deleteRes = rb.deleteKey(val);
-        if(deleteRes != s.count(val) == 1){
+        if(deleteRes != (s.count(val) == 1)){
             cout << "deleted " << val << " from tree but not found in set" << endl;
             failures++;
         }
