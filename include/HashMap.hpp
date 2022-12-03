@@ -89,7 +89,6 @@ public:
             entry = new HashNode(key, value);
             if (prev == NULL) {
                 // insert as first bucket
-                cout << "inserting at first bucket" << endl;
                 STORE(table[hashValue], entry);
             } else {
                 prev->setNext(entry);

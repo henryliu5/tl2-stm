@@ -46,7 +46,7 @@ public:
     void txCommit()
     {
         for (const auto& p : write_map) {
-            cout << "writing back addr: " << p.first << " val: " << p.second << endl;
+            // cout << "writing back addr: " << p.first << " val: " << p.second << endl;
             *(p.first) = p.second;
         }
     }
@@ -101,7 +101,7 @@ intptr_t TxLoad(intptr_t* addr)
     // TxLoadInt(x)
     _my_thread.numLoads++;
     if (_my_thread.write_map.find(addr) != _my_thread.write_map.end()) {
-        cout << "getting from write map: addr " << addr << " val: " << (int64_t) _my_thread.write_map[addr] << endl;
+        // cout << "getting from write map: addr " << addr << " val: " << (int64_t) _my_thread.write_map[addr] << endl;
         return _my_thread.write_map[addr];
     }
     return *addr;
@@ -117,7 +117,7 @@ void TxStore(intptr_t* addr, intptr_t val)
     // TxStoreInt(y, x)
     // ... y = 1
     _my_thread.numStores++;
-    cout << "setting addr: " << addr << " val: " << val << endl;
+    // cout << "setting addr: " << addr << " val: " << val << endl;
     _my_thread.write_map[addr] = val;
 }
 
