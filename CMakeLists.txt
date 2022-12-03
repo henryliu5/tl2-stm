@@ -8,9 +8,9 @@ set(ALL_TEST_FILES tests.cpp RBTree.cpp)
 set(BENCHMARK_FILES benchmark.cpp RBTree.cpp)
 set(TX_TEST_FILES tx_test.cpp stm.cpp RBTree.cpp)
 
+# Global settings
 add_definitions(-Wall -Werror)
-add_definitions(-DUSE_STM)
-
+link_libraries(pthread)
 
 add_executable(main ${SRC_FILES})
 add_executable(stm_tests ${ALL_TEST_FILES})

@@ -1,9 +1,55 @@
 #ifndef TL2_STM_IMPL_H
 #define TL2_STM_IMPL_H
+#include <atomic>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
 using namespace std;
+
+// Put globals here, e.g. global version clock, PS lock array
+atomic<int64_t> global_version_clock { 0 };
+// Global lock for testing
+mutex global_lock;
+
+class VersionedLock {
+    uint64_t version;
+    mutex lock;
+    bool locked;
+
+    void incrementVersion(){
+        version = version + 1;
+    }
+
+public:
+    VersionedLock() : version{0}, lock{}, locked{false} {}
+
+    int64_t getVersion(){
+        return version;
+    }
+
+    bool tryLock(){
+        bool res = lock.try_lock();
+        if(res){
+            locked = true;
+        }
+        return res;
+    }
+
+    void unlock(){
+        // TODO add a check to make sure this thread owns the lock
+        lock.unlock();
+        locked = false;
+        // Version is advanced every successful lock release
+        incrementVersion();
+    }
+};
+
+// Per stripe lock array - basically just a hash map
+#define NUM_LOCKS (2 << 20)
+VersionedLock PSLocks[NUM_LOCKS];
+#define GET_LOCK(addr) (PSLocks[((addr & 0x3FFFFC) + addr) % NUM_LOCKS])
+
 
 // struct LogEntry {
 //     intptr_t* addr;
@@ -22,9 +68,12 @@ using namespace std;
 // };
 
 class TxThread {
+    int64_t rv;
+
 public:
     TxThread()
-        : inTx(false)
+        : rv { 0 }
+        , inTx(false)
         , txCount(0)
         , numLoads(0)
         , numStores(0)
@@ -32,15 +81,19 @@ public:
     {
     }
 
-    // Start new Tx
+    // Start new transaction
     void txBegin()
     {
-        if (inTx)
-            cout << "WARNING: already in Tx" << endl;
+        // Profiling/misc. info
+        if (inTx) cout << "WARNING: txBegin() called but already in Tx" << endl;
         inTx = true;
         txCount++;
 
+        // Reset from previous Tx 
         write_map.clear();
+
+        rv = global_version_clock.load();
+        global_lock.lock();
     }
 
     void txCommit()
@@ -54,6 +107,8 @@ public:
     // Cleanup after Tx
     void txEnd()
     {
+        if (!inTx) cout << "WARNING: txEnd() called but not in Tx" << endl;
+        global_lock.unlock();
         inTx = false;
         write_map.clear();
     }
@@ -66,7 +121,6 @@ public:
     int numStores;
 };
 
-// Put globals here, e.g. global version clock, PS lock array
 
 // Using thread local storage for some magic here - every thread automatically
 // gets this _my_thread transactional context
@@ -83,18 +137,22 @@ thread_local TxThread _my_thread;
 
 void TxBegin()
 {
+    #ifdef USE_STM
     _my_thread.txBegin();
+    #endif
 }
 
 void TxEnd()
 {
+    #ifdef USE_STM
     _my_thread.txCommit();
     _my_thread.txEnd();
+    #endif
 }
 
 intptr_t TxLoad(intptr_t* addr)
 {
-    if(!_my_thread.inTx){
+    if (!_my_thread.inTx) {
         return *addr;
     }
     // int x = 1
@@ -109,7 +167,7 @@ intptr_t TxLoad(intptr_t* addr)
 
 void TxStore(intptr_t* addr, intptr_t val)
 {
-    if(!_my_thread.inTx){
+    if (!_my_thread.inTx) {
         *(addr) = val;
         return;
     }
