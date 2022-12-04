@@ -9,7 +9,7 @@ set(BENCHMARK_FILES benchmark.cpp stm.cpp)
 set(TX_TEST_FILES tx_test.cpp stm.cpp stm.cpp)
 
 # Global settings
-add_definitions(-Wall -Werror)
+# add_definitions(-Wall -Werror)
 link_libraries(pthread)
 
 add_executable(main ${SRC_FILES})
@@ -20,3 +20,4 @@ add_executable(bench ${BENCHMARK_FILES})
 
 target_compile_definitions(tx_test PUBLIC USE_STM)
 target_compile_definitions(stm_tests PUBLIC USE_STM)
+target_compile_definitions(bench PUBLIC USE_STM)

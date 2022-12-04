@@ -171,6 +171,7 @@ void TxThread::txEnd()
 
 intptr_t TxThread::txLoad(intptr_t* addr)
 {
+    assert(addr != NULL);
     numLoads++;
     if (!inTx) {
         return *addr;
@@ -196,6 +197,8 @@ intptr_t TxThread::txLoad(intptr_t* addr)
 
 void TxThread::txStore(intptr_t* addr, intptr_t val)
 {
+    assert(addr != NULL);
+
     if (!inTx) {
         *(addr) = val;
         return;

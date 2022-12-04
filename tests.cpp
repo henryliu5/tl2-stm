@@ -92,7 +92,10 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
     { // Insert test
         // Generate insert operations
         for (int i = 0; i < numInserts; i++) {
-            int64_t key = i;
+            int64_t keyMax = 200;
+            int64_t keyMin = 100;
+            int key = (rand() % (keyMax - keyMin)) + keyMin;
+            // int64_t key = i % 1000;
             int64_t val = rand();
             insert_ops.push_back(make_pair(key, val));
             base_map[key] = val;
@@ -232,7 +235,7 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
     vector<pair<int64_t, int64_t>> insert_ops;
 
     unordered_map<int64_t, int64_t> base_map;
-    HashMap m(1000);
+    HashMap m(10000);
     cout << "Starting insert phase" << endl;
     { // Insert test
         // Generate insert operations
@@ -300,17 +303,19 @@ int main()
     srand(time(NULL));
     // RB Tree tests
     cout << "Starting RB Tree tests" << endl;
-    // RBTreeTests::smallSimple();
-    // RBTreeTests::largeRand();
+    #ifndef USE_STM
+    RBTreeTests::smallSimple();
+    RBTreeTests::largeRand();
+    #endif
     #ifdef USE_STM
     RBTreeTests::largeRandThreads(100000, 10000, 30);
     #endif
 
     // HashMap tests
     cout << "Starting HashMap tests" << endl;
-    // #ifndef USE_STM
-    // HashMapTests::largeRand();
-    // #endif
+    #ifndef USE_STM
+    HashMapTests::largeRand();
+    #endif
     #ifdef USE_STM
     HashMapTests::largeRandThreads(100000, 10000, 30);
     #endif
