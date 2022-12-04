@@ -30,12 +30,11 @@ public:
     Node* uncle()
     {
         // If no parent or grandparent, then no uncle
-        // TODO can reduce 1 load here
-        if (parent == NULL || LOAD_NODE(parent->parent) == NULL)
+        if (LOAD_NODE(parent) == NULL || LOAD_NODE(LOAD_NODE(parent)->parent) == NULL)
             return NULL;
 
-        Node* grandparent = LOAD_NODE(parent->parent);
-        if (parent->isOnLeft())
+        Node* grandparent = LOAD_NODE(LOAD_NODE(parent)->parent);
+        if (LOAD_NODE(parent)->isOnLeft())
             // uncle on right
             return LOAD_NODE(grandparent->right);
         else
@@ -44,38 +43,38 @@ public:
     }
 
     // check if node is left child of parent
-    bool isOnLeft() { return this == LOAD_NODE(parent->left); }
+    bool isOnLeft() { return this == LOAD_NODE(LOAD_NODE(parent)->left); }
 
     // returns pointer to sibling
     Node* sibling()
     {
         // sibling null if no parent
-        if (parent == NULL)
+        if (LOAD_NODE(parent) == NULL)
             return NULL;
 
         if (isOnLeft())
-            return LOAD_NODE(parent->right);
+            return LOAD_NODE(LOAD_NODE(parent)->right);
 
-        return LOAD_NODE(parent->left);
+        return LOAD_NODE(LOAD_NODE(parent)->left);
     }
 
     // moves node down and moves given node in its place
     void moveDown(Node* nParent)
     {
-        if (parent != NULL) {
+        if (LOAD_NODE(parent) != NULL) {
             if (isOnLeft()) {
-                STORE(parent->left, nParent);
+                STORE(LOAD_NODE(parent)->left, nParent);
             } else {
-                STORE(parent->right, nParent);
+                STORE(LOAD_NODE(parent)->right, nParent);
             }
         }
-        STORE(nParent->parent, parent);
+        STORE(nParent->parent, LOAD_NODE(parent));
         STORE(parent, nParent);
     }
 
     bool hasRedChild()
     {
-        return (LOAD_NODE(left) != NULL && LOAD(left->color) == RED) || (LOAD_NODE(right) != NULL && LOAD(right->color) == RED);
+        return (LOAD_NODE(left) != NULL && LOAD(LOAD_NODE(left)->color) == RED) || (LOAD_NODE(right) != NULL && LOAD(LOAD_NODE(right)->color) == RED);
     }
 };
 
@@ -198,8 +197,8 @@ class RBTree {
     {
         Node* temp = x;
 
-        while (temp->left != NULL)
-            temp = temp->left;
+        while (LOAD_NODE(temp->left) != NULL)
+            temp = LOAD_NODE(temp->left);
 
         return temp;
     }
@@ -208,18 +207,18 @@ class RBTree {
     Node* BSTreplace(Node* x)
     {
         // when node have 2 children
-        if (x->left != NULL and x->right != NULL)
-            return successor(x->right);
+        if (LOAD_NODE(x->left) != NULL && LOAD_NODE(x->right) != NULL)
+            return successor(LOAD_NODE(x->right));
 
         // when leaf
-        if (x->left == NULL and x->right == NULL)
+        if (LOAD_NODE(x->left) == NULL && LOAD_NODE(x->right) == NULL)
             return NULL;
 
         // when single child
-        if (x->left != NULL)
-            return x->left;
+        if (LOAD_NODE(x->left) != NULL)
+            return LOAD_NODE(x->left);
         else
-            return x->right;
+            return LOAD_NODE(x->right);
     }
 
     // deletes the given node
@@ -228,14 +227,14 @@ class RBTree {
         Node* u = BSTreplace(v);
 
         // True when u and v are both black
-        bool uvBlack = ((u == NULL or u->color == BLACK) and (v->color == BLACK));
-        Node* parent = v->parent;
+        bool uvBlack = ((u == NULL || LOAD(u->color) == BLACK) && (LOAD(v->color) == BLACK));
+        Node* parent = LOAD_NODE(v->parent);
 
         if (u == NULL) {
             // u is NULL therefore v is leaf
-            if (v == root) {
+            if (v == LOAD_NODE(root)) {
                 // v is root, making root null
-                root = NULL;
+                STORE(root, NULL);
             } else {
                 if (uvBlack) {
                     // u and v both black
@@ -245,42 +244,43 @@ class RBTree {
                     // u or v is red
                     if (v->sibling() != NULL)
                         // sibling is not null, make it red"
-                        v->sibling()->color = RED;
+                        STORE(v->sibling()->color, RED);
                 }
 
                 // delete v from the tree
                 if (v->isOnLeft()) {
-                    parent->left = NULL;
+                    STORE(parent->left, NULL);
                 } else {
-                    parent->right = NULL;
+                    STORE(parent->right, NULL);
                 }
             }
-            delete v;
+            // delete v; // TODO handle memory management
             return;
         }
 
-        if (v->left == NULL or v->right == NULL) {
+        if (LOAD_NODE(v->left) == NULL || LOAD_NODE(v->right) == NULL) {
             // v has 1 child
-            if (v == root) {
+            if (v == LOAD_NODE(root)) {
                 // v is root, assign the value of u to v, and delete u
-                v->val = u->val;
-                v->left = v->right = NULL;
-                delete u;
+                STORE(v->val, u->val);
+                STORE(v->left, NULL);
+                STORE(v->right, NULL);
+                // delete u; // TODO handle memory management
             } else {
                 // Detach v from tree and move u up
                 if (v->isOnLeft()) {
-                    parent->left = u;
+                    STORE(parent->left, u);
                 } else {
-                    parent->right = u;
+                    STORE(parent->right, u);
                 }
-                delete v;
-                u->parent = parent;
+                // delete v; // TODO handle memory management
+                STORE(u->parent, parent);
                 if (uvBlack) {
                     // u and v both black, fix double black at u
                     fixDoubleBlack(u);
                 } else {
                     // u or v red, color u black
-                    u->color = BLACK;
+                    STORE(u->color, BLACK);
                 }
             }
             return;
@@ -293,19 +293,20 @@ class RBTree {
 
     void fixDoubleBlack(Node* x)
     {
-        if (x == root)
+        if (x == LOAD_NODE(root))
             // Reached root
             return;
 
-        Node *sibling = x->sibling(), *parent = x->parent;
+        Node* sibling = x->sibling();
+        Node* parent = LOAD_NODE(x->parent);
         if (sibling == NULL) {
             // No sibiling, double black pushed up
             fixDoubleBlack(parent);
         } else {
-            if (sibling->color == RED) {
+            if (LOAD(sibling->color) == RED) {
                 // Sibling red
-                parent->color = RED;
-                sibling->color = BLACK;
+                STORE(parent->color, RED);
+                STORE(sibling->color, BLACK);
                 if (sibling->isOnLeft()) {
                     // left case
                     rightRotate(parent);
@@ -318,39 +319,39 @@ class RBTree {
                 // Sibling black
                 if (sibling->hasRedChild()) {
                     // at least 1 red children
-                    if (sibling->left != NULL and sibling->left->color == RED) {
+                    if (LOAD_NODE(sibling->left) != NULL && LOAD(LOAD_NODE(sibling->left)->color) == RED) {
                         if (sibling->isOnLeft()) {
                             // left left
-                            sibling->left->color = sibling->color;
-                            sibling->color = parent->color;
+                            STORE(LOAD_NODE(sibling->left)->color, LOAD(sibling->color));
+                            STORE(sibling->color, LOAD(parent->color));
                             rightRotate(parent);
                         } else {
                             // right left
-                            sibling->left->color = parent->color;
+                            STORE(LOAD_NODE(sibling->left)->color, LOAD(parent->color));
                             rightRotate(sibling);
                             leftRotate(parent);
                         }
                     } else {
                         if (sibling->isOnLeft()) {
                             // left right
-                            sibling->right->color = parent->color;
+                            STORE(LOAD_NODE(sibling->right)->color, LOAD(parent->color));
                             leftRotate(sibling);
                             rightRotate(parent);
                         } else {
                             // right right
-                            sibling->right->color = sibling->color;
-                            sibling->color = parent->color;
+                            STORE(LOAD_NODE(sibling->right)->color, LOAD(sibling->color));
+                            STORE(sibling->color, LOAD(parent->color));
                             leftRotate(parent);
                         }
                     }
-                    parent->color = BLACK;
+                    STORE(parent->color, BLACK);
                 } else {
                     // 2 black children
-                    sibling->color = RED;
-                    if (parent->color == BLACK)
+                    STORE(sibling->color, RED);
+                    if (LOAD(parent->color) == BLACK)
                         fixDoubleBlack(parent);
                     else
-                        parent->color = BLACK;
+                        STORE(parent->color, BLACK);
                 }
             }
         }
@@ -459,14 +460,13 @@ public:
     // utility function that deletes the node with given value
     bool deleteKey(int64_t n)
     {
-        if (root == NULL)
+        if (LOAD_NODE(root) == NULL)
             // Tree is empty
             return false;
 
         Node* v = search(n);
 
-        if (v->val != n) {
-            // cout << "No node found to delete with value:" << n << endl;
+        if (LOAD(v->val) != n) {
             return false;
         }
 

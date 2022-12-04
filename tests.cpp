@@ -77,7 +77,6 @@ void largeRand()
             }
         }
     }
-    cout << "large rand finished" << endl;
 }
 
 void largeRandThreads(int numInserts, int numDeletes, int numThreads)
@@ -297,12 +296,16 @@ int main()
     cout << "Starting RB Tree tests" << endl;
     RBTreeTests::smallSimple();
     RBTreeTests::largeRand();
-    // RBTreeTests::largeRandThreads(10000, 1000, 20);
+    #ifdef USE_STM
+    RBTreeTests::largeRandThreads(10000, 1000, 20);
+    #endif
 
-    // // HashMap tests
-    // cout << "Starting HashMap tests" << endl;
-    // HashMapTests::largeRand();
-    // HashMapTests::largeRandThreads(10000, 1000, 2);
+    // HashMap tests
+    cout << "Starting HashMap tests" << endl;
+    HashMapTests::largeRand();
+    #ifdef USE_STM
+    HashMapTests::largeRandThreads(10000, 1000, 2);
+    #endif
 
     if (failures > 0) {
         cout << "\nFailed " << failures << " tests!!!" << endl;
