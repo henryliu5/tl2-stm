@@ -8,9 +8,9 @@
 using namespace std;
 
 // Put globals here, e.g. global version clock, PS lock array
-atomic<int64_t> global_version_clock { 0 };
+inline atomic<int64_t> global_version_clock { 0 };
 // Global lock for testing
-mutex global_lock;
+inline mutex global_lock;
 
 class VersionedLock {
     uint64_t version;
@@ -47,7 +47,7 @@ public:
 
 // Per stripe lock array - basically just a hash map
 #define NUM_LOCKS (2 << 20)
-VersionedLock PSLocks[NUM_LOCKS];
+inline VersionedLock PSLocks[NUM_LOCKS];
 #define GET_LOCK(addr) (PSLocks[((addr & 0x3FFFFC) + addr) % NUM_LOCKS])
 
 
@@ -124,7 +124,7 @@ public:
 
 // Using thread local storage for some magic here - every thread automatically
 // gets this _my_thread transactional context
-thread_local TxThread _my_thread;
+inline thread_local TxThread _my_thread;
 
 #ifdef USE_STM
 #define LOAD(var) (TxLoad((intptr_t*)&var))
@@ -135,22 +135,25 @@ thread_local TxThread _my_thread;
 #define STORE(var, val) (var = val)
 #endif
 
-void TxBegin()
+inline void TxBegin()
 {
     #ifdef USE_STM
+    // cout << "locking" << endl;
     _my_thread.txBegin();
+    // cout << "lock acquired" << endl;
     #endif
 }
 
-void TxEnd()
+inline void TxEnd()
 {
     #ifdef USE_STM
     _my_thread.txCommit();
     _my_thread.txEnd();
+    // cout << "unlocking" << endl;
     #endif
 }
 
-intptr_t TxLoad(intptr_t* addr)
+inline intptr_t TxLoad(intptr_t* addr)
 {
     if (!_my_thread.inTx) {
         return *addr;
@@ -165,7 +168,7 @@ intptr_t TxLoad(intptr_t* addr)
     return *addr;
 }
 
-void TxStore(intptr_t* addr, intptr_t val)
+inline void TxStore(intptr_t* addr, intptr_t val)
 {
     if (!_my_thread.inTx) {
         *(addr) = val;

@@ -2,11 +2,15 @@
 #define RB_TREE_HPP
 #include <iostream>
 #include <vector>
+#include "stm.hpp"
 
 // Red black tree implementation based on https://www.geeksforgeeks.org/deletion-in-red-black-tree/
 using namespace std;
 
-enum COLOR { RED, BLACK };
+#define LOAD_NODE(addr) ((Node*) LOAD(addr))
+
+enum COLOR { RED,
+    BLACK };
 
 class Node {
 public:
@@ -16,31 +20,31 @@ public:
 
     Node(int val)
         : val(val)
-    {
-        parent = left = right = NULL;
-
-        // Node is created during insertion
-        // Node is red at insertion
-        color = RED;
-    }
+        , color(RED) // Node is red at insertion
+        , left(NULL)
+        , right(NULL)
+        , parent(NULL)
+    {}
 
     // returns pointer to uncle
     Node* uncle()
     {
         // If no parent or grandparent, then no uncle
-        if (parent == NULL or parent->parent == NULL)
+        // TODO can reduce 1 load here
+        if (parent == NULL || LOAD_NODE(parent->parent) == NULL)
             return NULL;
 
+        Node* grandparent = LOAD_NODE(parent->parent);
         if (parent->isOnLeft())
             // uncle on right
-            return parent->parent->right;
+            return LOAD_NODE(grandparent->right);
         else
             // uncle on left
-            return parent->parent->left;
+            return LOAD_NODE(grandparent->left);
     }
 
     // check if node is left child of parent
-    bool isOnLeft() { return this == parent->left; }
+    bool isOnLeft() { return this == LOAD_NODE(parent->left); }
 
     // returns pointer to sibling
     Node* sibling()
@@ -50,9 +54,9 @@ public:
             return NULL;
 
         if (isOnLeft())
-            return parent->right;
+            return LOAD_NODE(parent->right);
 
-        return parent->left;
+        return LOAD_NODE(parent->left);
     }
 
     // moves node down and moves given node in its place
@@ -60,18 +64,18 @@ public:
     {
         if (parent != NULL) {
             if (isOnLeft()) {
-                parent->left = nParent;
+                STORE(parent->left, nParent);
             } else {
-                parent->right = nParent;
+                STORE(parent->right, nParent);
             }
         }
-        nParent->parent = parent;
-        parent = nParent;
+        STORE(nParent->parent, parent);
+        STORE(parent, nParent);
     }
 
     bool hasRedChild()
     {
-        return (left != NULL and left->color == RED) or (right != NULL and right->color == RED);
+        return (LOAD_NODE(left) != NULL && LOAD(left->color) == RED) || (LOAD_NODE(right) != NULL && LOAD(right->color) == RED);
     }
 };
 
@@ -82,80 +86,83 @@ class RBTree {
     void leftRotate(Node* x)
     {
         // new parent will be node's right child
-        Node* nParent = x->right;
+        Node* nParent = LOAD_NODE(x->right);
 
         // update root if current node is root
-        if (x == root)
-            root = nParent;
+        if (x == LOAD_NODE(root))
+            STORE(root, nParent);
 
         x->moveDown(nParent);
 
         // connect x with new parent's left element
-        x->right = nParent->left;
+        STORE(x->right, LOAD_NODE(nParent->left));
         // connect new parent's left element with node
         // if it is not null
-        if (nParent->left != NULL)
-            nParent->left->parent = x;
-
+        if (LOAD_NODE(nParent->left) != NULL){
+            Node* nParentLeft = LOAD_NODE(nParent->left);
+            STORE(nParentLeft->parent, x);
+        }
         // connect new parent with x
-        nParent->left = x;
+        STORE(nParent->left, x);
     }
 
     void rightRotate(Node* x)
     {
         // new parent will be node's left child
-        Node* nParent = x->left;
+        Node* nParent = LOAD_NODE(x->left);
 
         // update root if current node is root
-        if (x == root)
-            root = nParent;
+        if (x == LOAD_NODE(root))
+            STORE(root, nParent);
 
         x->moveDown(nParent);
 
         // connect x with new parent's right element
-        x->left = nParent->right;
+        STORE(x->left, LOAD_NODE(nParent->right));
         // connect new parent's right element with node
         // if it is not null
-        if (nParent->right != NULL)
-            nParent->right->parent = x;
-
+        if (LOAD_NODE(nParent->right) != NULL){
+            Node* nParentRight = LOAD_NODE(nParent->right);
+            STORE(nParentRight->parent, x);
+        }
         // connect new parent with x
-        nParent->right = x;
+        STORE(nParent->right, x);
     }
 
     void swapColors(Node* x1, Node* x2)
     {
-        COLOR temp = x1->color;
-        x1->color = x2->color;
-        x2->color = temp;
+        COLOR temp = (COLOR) LOAD(x1->color);
+        STORE(x1->color, LOAD(x2->color));
+        STORE(x2->color, temp);
     }
 
     void swapValues(Node* u, Node* v)
     {
-        int64_t temp = u->val;
-        u->val = v->val;
-        v->val = temp;
+        int64_t temp = LOAD(u->val);
+        STORE(u->val, LOAD(v->val));
+        STORE(v->val, temp);
     }
 
     // fix red red at given node
     void fixRedRed(Node* x)
     {
         // if x is root color it black and return
-        if (x == root) {
-            x->color = BLACK;
+        if (x == LOAD_NODE(root)) {
+            STORE(x->color, BLACK);
             return;
         }
 
         // initialize parent, grandparent, uncle
-        Node *parent = x->parent, *grandparent = parent->parent,
-             *uncle = x->uncle();
+        Node* parent = LOAD_NODE(x->parent);
+        Node* grandparent = LOAD_NODE(parent->parent);
+        Node* uncle = x->uncle();
 
-        if (parent->color != BLACK) {
-            if (uncle != NULL && uncle->color == RED) {
+        if (LOAD(parent->color) != BLACK) {
+            if (uncle != NULL && LOAD(uncle->color) == RED) {
                 // uncle red, perform recoloring and recurse
-                parent->color = BLACK;
-                uncle->color = BLACK;
-                grandparent->color = RED;
+                STORE(parent->color, BLACK);
+                STORE(uncle->color, BLACK);
+                STORE(grandparent->color, RED);
                 fixRedRed(grandparent);
             } else {
                 // Else perform LR, LL, RL, RR
@@ -349,7 +356,6 @@ class RBTree {
         }
     }
 
-
     // prints inorder recursively
     void inorderHelp(Node* x, vector<int>& v)
     {
@@ -360,20 +366,29 @@ class RBTree {
         inorderHelp(x->right, v);
     }
 
-    size_t sizeHelp(Node* n){
-        if(!n) return 0;
+    size_t sizeHelp(Node* n)
+    {
+        if (!n)
+            return 0;
         return 1 + sizeHelp(n->left) + sizeHelp(n->right);
     }
 
-    bool containsHelp(Node* n, int64_t key){
-        if(!n) return false;
-        if(n->val == key){
+    bool containsHelp(Node* n, int64_t key)
+    {
+        if (!n)
+            return false;
+        if (n->val == key) {
             return true;
         }
-        if(n->val < key){
+        if (n->val < key) {
             return containsHelp(n->right, key);
         }
         return containsHelp(n->left, key);
+    }
+
+    int maxHeightHelp(Node *n){
+        if(!n) return 0;
+        return max(maxHeightHelp(n->left), maxHeightHelp(n->right)) + 1;
     }
 
 public:
@@ -388,20 +403,20 @@ public:
     // else returns the last node while traversing (used in insert)
     Node* search(int64_t n)
     {
-        Node* temp = root;
+        Node* temp = LOAD_NODE(root);
         while (temp != NULL) {
-            if (n < temp->val) {
-                if (temp->left == NULL)
+            if (n < LOAD(temp->val)) {
+                if (LOAD_NODE(temp->left) == NULL)
                     break;
                 else
-                    temp = temp->left;
-            } else if (n == temp->val) {
+                    temp = LOAD_NODE(temp->left);
+            } else if (n == LOAD(temp->val)) {
                 break;
             } else {
-                if (temp->right == NULL)
+                if (LOAD_NODE(temp->right) == NULL)
                     break;
                 else
-                    temp = temp->right;
+                    temp = LOAD_NODE(temp->right);
             }
         }
 
@@ -412,15 +427,15 @@ public:
     void insert(int64_t n)
     {
         Node* newNode = new Node(n);
-        if (root == NULL) {
+        if (LOAD_NODE(root) == NULL) {
             // when root is null
             // simply insert value at root
             newNode->color = BLACK;
-            root = newNode;
+            STORE(root, newNode);
         } else {
             Node* temp = search(n);
 
-            if (temp->val == n) {
+            if (LOAD(temp->val) == n) {
                 // return if value already exists
                 return;
             }
@@ -431,10 +446,10 @@ public:
             // connect new node to correct node
             newNode->parent = temp;
 
-            if (n < temp->val)
-                temp->left = newNode;
+            if (n < LOAD(temp->val))
+                STORE(temp->left, newNode);
             else
-                temp->right = newNode;
+                STORE(temp->right, newNode);
 
             // fix red red voilaton if exists
             fixRedRed(newNode);
@@ -448,7 +463,7 @@ public:
             // Tree is empty
             return false;
 
-        Node *v = search(n);
+        Node* v = search(n);
 
         if (v->val != n) {
             // cout << "No node found to delete with value:" << n << endl;
@@ -459,18 +474,25 @@ public:
         return true;
     }
 
-    vector<int> inorder(){
+    vector<int> inorder()
+    {
         vector<int> v;
         inorderHelp(root, v);
         return v;
     }
 
-    size_t size(){
+    size_t size()
+    {
         return sizeHelp(root);
     }
 
-    bool contains(int key){
+    bool contains(int key)
+    {
         return containsHelp(root, key);
+    }
+
+    int maxHeight(){
+        return maxHeightHelp(root);
     }
 };
 
