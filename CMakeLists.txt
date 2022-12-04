@@ -3,10 +3,10 @@ project(TL2_STM)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SRC_FILES main.cpp RBTree.cpp)
-set(ALL_TEST_FILES tests.cpp RBTree.cpp)
-set(BENCHMARK_FILES benchmark.cpp RBTree.cpp)
-set(TX_TEST_FILES tx_test.cpp stm.cpp RBTree.cpp)
+set(SRC_FILES main.cpp stm.cpp)
+set(ALL_TEST_FILES tests.cpp stm.cpp)
+set(BENCHMARK_FILES benchmark.cpp stm.cpp)
+set(TX_TEST_FILES tx_test.cpp stm.cpp stm.cpp)
 
 # Global settings
 add_definitions(-Wall -Werror)

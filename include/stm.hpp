@@ -50,68 +50,20 @@ public:
 inline VersionedLock PSLocks[NUM_LOCKS];
 #define GET_LOCK(addr) (PSLocks[((addr & 0x3FFFFC) + addr) % NUM_LOCKS])
 
-
-// struct LogEntry {
-//     intptr_t* addr;
-//     intptr_t val;
-// };
-// class Log {
-//     // vector<LogEntry> write_log;
-//     unordered_map<intptr_t*, intptr_t> write_map;
-// public:
-//     void commit()
-//     {
-//         for (const auto& p : write_map) {
-//             *(p.first) = p.second;
-//         }
-//     }
-// };
-
 class TxThread {
     int64_t rv;
 
+    void txAbort();
+    
 public:
-    TxThread()
-        : rv { 0 }
-        , inTx(false)
-        , txCount(0)
-        , numLoads(0)
-        , numStores(0)
+    TxThread();
 
-    {
-    }
+    void txBegin();
+    void txCommit();
+    void txEnd();
 
-    // Start new transaction
-    void txBegin()
-    {
-        // Profiling/misc. info
-        if (inTx) cout << "WARNING: txBegin() called but already in Tx" << endl;
-        inTx = true;
-        txCount++;
-
-        // Reset from previous Tx 
-        write_map.clear();
-
-        rv = global_version_clock.load();
-        global_lock.lock();
-    }
-
-    void txCommit()
-    {
-        for (const auto& p : write_map) {
-            // cout << "writing back addr: " << p.first << " val: " << p.second << endl;
-            *(p.first) = p.second;
-        }
-    }
-
-    // Cleanup after Tx
-    void txEnd()
-    {
-        if (!inTx) cout << "WARNING: txEnd() called but not in Tx" << endl;
-        global_lock.unlock();
-        inTx = false;
-        write_map.clear();
-    }
+    intptr_t txLoad(intptr_t* addr);
+    void txStore(intptr_t* addr, intptr_t val);
 
     unordered_map<intptr_t*, intptr_t> write_map;
     bool inTx; // Currently no nesting
@@ -126,9 +78,10 @@ public:
 // gets this _my_thread transactional context
 inline thread_local TxThread _my_thread;
 
+// Macros for instrumenting loads and stores
 #ifdef USE_STM
-#define LOAD(var) (TxLoad((intptr_t*)&var))
-#define STORE(var, val) (TxStore((intptr_t*)&var, (intptr_t)val))
+#define LOAD(var) (_my_thread.txLoad((intptr_t*)&var))
+#define STORE(var, val) (_my_thread.txStore((intptr_t*)&var, (intptr_t)val))
 
 #else
 #define LOAD(var) (var)
@@ -151,35 +104,6 @@ inline void TxEnd()
     _my_thread.txEnd();
     // cout << "unlocking" << endl;
     #endif
-}
-
-inline intptr_t TxLoad(intptr_t* addr)
-{
-    if (!_my_thread.inTx) {
-        return *addr;
-    }
-    // int x = 1
-    // TxLoadInt(x)
-    _my_thread.numLoads++;
-    if (_my_thread.write_map.find(addr) != _my_thread.write_map.end()) {
-        // cout << "getting from write map: addr " << addr << " val: " << (int64_t) _my_thread.write_map[addr] << endl;
-        return _my_thread.write_map[addr];
-    }
-    return *addr;
-}
-
-inline void TxStore(intptr_t* addr, intptr_t val)
-{
-    if (!_my_thread.inTx) {
-        *(addr) = val;
-        return;
-    }
-    // int x = 1
-    // TxStoreInt(y, x)
-    // ... y = 1
-    _my_thread.numStores++;
-    // cout << "setting addr: " << addr << " val: " << val << endl;
-    _my_thread.write_map[addr] = val;
 }
 
 #endif
