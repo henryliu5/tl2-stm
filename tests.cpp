@@ -9,6 +9,7 @@
 #include <vector>
 #include <cmath>
 #include <cstdlib>
+#include "include/stm.hpp"
 
 using namespace std;
 int failures = 0;
@@ -104,6 +105,7 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
         // Spawn threads
         for (int thread_id = 0; thread_id < numThreads; thread_id++) {
             workers.push_back(thread([&rb, thread_id, numThreads, numInserts, insert_ops]() {
+                _thread_id = thread_id;
                 for (int i = thread_id; i < numInserts; i += numThreads) {
                     TxBegin();
                     rb.insert(insert_ops[i].first);
@@ -179,13 +181,13 @@ namespace HashMapTests {
 void checkCorrect(const unordered_map<int64_t, int64_t>& base, HashMap& m)
 {
     for (const auto& p : base) {
-        int64_t res;
+        int64_t res = -1;
         if (!m.get(p.first, res)) {
             cout << "HashMap did not contain key " << p.first << endl;
             failures++;
-        }
-        if (res != p.second) {
+        } else if (res != p.second) {
             cout << "HashMap contained incorrect value" << endl;
+            cout << "key: " << p.first << " expected v: " << p.second << " got " << res << endl;
             failures++;
         }
     }
@@ -292,23 +294,26 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
 int main()
 {
     srand(time(NULL));
-    // RB Tree tests
-    cout << "Starting RB Tree tests" << endl;
-    RBTreeTests::smallSimple();
-    RBTreeTests::largeRand();
-    #ifdef USE_STM
-    RBTreeTests::largeRandThreads(10000, 1000, 20);
-    #endif
+    // // RB Tree tests
+    // cout << "Starting RB Tree tests" << endl;
+    // RBTreeTests::smallSimple();
+    // RBTreeTests::largeRand();
+    // #ifdef USE_STM
+    // RBTreeTests::largeRandThreads(10, 10, 2);
+    // #endif
 
     // HashMap tests
     cout << "Starting HashMap tests" << endl;
+    #ifndef USE_STM
     HashMapTests::largeRand();
+    #endif
     #ifdef USE_STM
-    HashMapTests::largeRandThreads(10000, 1000, 2);
+    HashMapTests::largeRandThreads(10000, 1000, 30);
     #endif
 
     if (failures > 0) {
         cout << "\nFailed " << failures << " tests!!!" << endl;
+        exit(1);
     } else {
         cout << "\nPassed all tests" << endl;
     }

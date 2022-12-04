@@ -4,6 +4,7 @@
 #include "stm.hpp"
 // Hash table implementation adapted from https://aozturk.medium.com/simple-hash-map-hash-table-implementation-in-c-931965904250
 
+#define LOAD_HN(addr) ((HashNode*) LOAD(addr))
 
 class HashNode {
 public:
@@ -62,6 +63,7 @@ public:
     // }
 
     bool get(const int64_t &key, int64_t& value) {
+        assert(!_my_thread.inTx);
         unsigned long hashValue = key % table_size;
         HashNode* entry = (HashNode*) LOAD(table[hashValue]);
 
@@ -70,12 +72,38 @@ public:
                 STORE(value, entry->getValue());
                 return true;
             }
-            entry = entry->getNext();
+            STORE(entry, entry->getNext());
         }
         return false;
     }
 
-    void put(const int64_t &key, const int64_t &value) {
+    void put(const int64_t key, const int64_t value) {
+        // unsigned long hashValue = key % table_size;
+        // HashNode* prev;
+        // STORE(prev, NULL);
+        // HashNode* entry;
+        // STORE(entry, LOAD_HN(table[hashValue]));
+
+        // while (LOAD_HN(entry) != NULL && LOAD_HN(entry)->getKey() != key) {
+        //     // cout << "here" << endl;
+        //     // cout << "entry val: " << entry->getKey() << " " << entry->getValue() << endl;
+        //     assert(entry != entry->getNext());
+        //     STORE(prev, LOAD_HN(entry));
+        //     STORE(entry, LOAD_HN(entry)->getNext());
+        // }
+
+        // if (LOAD_HN(entry) == NULL) {
+        //     STORE(entry, new HashNode(key, value));
+        //     if (LOAD_HN(prev) == NULL) {
+        //         // insert as first bucket
+        //         STORE(table[hashValue], LOAD_HN(entry));
+        //     } else {
+        //         LOAD_HN(prev)->setNext(LOAD_HN(entry));
+        //     }
+        // } else {
+        //     // just update the value
+        //     LOAD_HN(entry)->setValue(value);
+        // }
         unsigned long hashValue = key % table_size;
         HashNode* prev = NULL;
         HashNode* entry = (HashNode*) LOAD(table[hashValue]);
@@ -102,7 +130,7 @@ public:
     void remove(const int64_t &key) {
         unsigned long hashValue = key % table_size;
         HashNode* prev = NULL;
-        HashNode* entry = table[hashValue];
+        HashNode* entry = (HashNode*) LOAD(table[hashValue]);
 
         while (entry != NULL && entry->getKey() != key) {
             prev = entry;
@@ -120,7 +148,7 @@ public:
             } else {
                 prev->setNext(entry->getNext());
             }
-            delete entry;
+            // delete entry; // TODO tx memory management
         }
     }
 
