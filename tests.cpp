@@ -8,9 +8,11 @@
 #include <unordered_map>
 #include <vector>
 #include <cmath>
+#include <cstdlib>
 
 using namespace std;
 int failures = 0;
+
 
 namespace RBTreeTests {
 void checkOrderAndSize(unordered_set<int64_t>& s, RBTree& rb)
@@ -51,29 +53,31 @@ void largeRand()
     }
     checkOrderAndSize(s, rb);
 
-    // // Now do a bunch of random deletions
-    // for (int i = 0; i < N / 10; i++) {
-    //     TxBegin();
-    //     int val = rand() % N;
-    //     bool deleteRes = rb.deleteKey(val);
-    //     TxEnd();
-    //     if (deleteRes != (s.count(val) == 1)) {
-    //         cout << "deleted " << val << " from tree but not found in set" << endl;
-    //         failures++;
-    //     }
-    //     s.erase(val);
-    // }
-    // checkOrderAndSize(s, rb);
+    // Now do a bunch of random deletions
+    for (int i = 0; i < N / 10; i++) {
+        TxBegin();
+        int val = rand() % N;
+        bool deleteRes = rb.deleteKey(val);
+        TxEnd();
+        if (deleteRes != (s.count(val) == 1)) {
+            cout << "Tree and set deletion disagree key " << val << ", tree: " << deleteRes << " set: " << (s.count(val) == 1 )<< endl;
+            // cout << "deleted " << val << " from tree but not found in set" << endl;
+            failures++;
+        }
+        s.erase(val);
+    }
+    checkOrderAndSize(s, rb);
 
-    // // Check containment of whatever remains
-    // for (int i = 0; i < N; i++) {
-    //     if (s.count(i) == 1) {
-    //         if (!rb.contains(i)) {
-    //             cout << "set contained, but rb tree didn't: " << i << endl;
-    //             failures++;
-    //         }
-    //     }
-    // }
+    // Check containment of whatever remains
+    for (int i = 0; i < N; i++) {
+        if (s.count(i) == 1) {
+            if (!rb.contains(i)) {
+                cout << "set contained, but rb tree didn't: " << i << endl;
+                failures++;
+            }
+        }
+    }
+    cout << "large rand finished" << endl;
 }
 
 void largeRandThreads(int numInserts, int numDeletes, int numThreads)
@@ -288,11 +292,12 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
 
 int main()
 {
+    srand(time(NULL));
     // RB Tree tests
     cout << "Starting RB Tree tests" << endl;
     RBTreeTests::smallSimple();
     RBTreeTests::largeRand();
-    RBTreeTests::largeRandThreads(10000, 1000, 20);
+    // RBTreeTests::largeRandThreads(10000, 1000, 20);
 
     // // HashMap tests
     // cout << "Starting HashMap tests" << endl;
