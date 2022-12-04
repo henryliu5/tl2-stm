@@ -123,35 +123,39 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
         }
         checkOrderAndSize(res, rb);
     }
-    // cout << "Starting delete phase" << endl;
-    // { // Delete tests
-    //     vector<int64_t> delete_ops;
-    //     for (int i = 0; i < numDeletes; i++) {
-    //         int64_t key = rand() % numInserts;
-    //         delete_ops.push_back(key);
-    //         base_map.erase(key);
-    //     }
-    //     // Shuffle key value operations
-    //     auto rng = default_random_engine {};
-    //     shuffle(begin(insert_ops), end(insert_ops), rng);
+    cout << "Starting delete phase" << endl;
+    { // Delete tests
+        vector<int64_t> delete_ops;
+        for (int i = 0; i < numDeletes; i++) {
+            int64_t key = rand() % numInserts;
+            delete_ops.push_back(key);
+            base_map.erase(key);
+        }
+        // Shuffle key value operations
+        auto rng = default_random_engine {};
+        shuffle(begin(insert_ops), end(insert_ops), rng);
 
-    //     vector<thread> workers;
-    //     // Spawn threads
-    //     for (int thread_id = 0; thread_id < numThreads; thread_id++) {
-    //         workers.push_back(thread([&m, thread_id, numThreads, numDeletes, delete_ops]() {
-    //             for (int i = thread_id; i < numDeletes; i += numThreads) {
-    //                 TxBegin();
-    //                 m.remove(delete_ops[i]);
-    //                 TxEnd();
-    //             }
-    //         }));
-    //     }
-    //     // Barrier
-    //     for_each(workers.begin(), workers.end(), [](thread& t) {
-    //         t.join();
-    //     });
-    //     checkCorrect(base_map, m);
-    // }
+        vector<thread> workers;
+        // Spawn threads
+        for (int thread_id = 0; thread_id < numThreads; thread_id++) {
+            workers.push_back(thread([&rb, thread_id, numThreads, numDeletes, delete_ops]() {
+                for (int i = thread_id; i < numDeletes; i += numThreads) {
+                    TxBegin();
+                    rb.deleteKey(delete_ops[i]);
+                    TxEnd();
+                }
+            }));
+        }
+        // Barrier
+        for_each(workers.begin(), workers.end(), [](thread& t) {
+            t.join();
+        });
+        unordered_set<int64_t> res;
+        for(auto& p: base_map){
+            res.insert(p.first);
+        }
+        checkOrderAndSize(res, rb);
+    }
 }
 
 void smallSimple()
@@ -228,7 +232,7 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
     vector<pair<int64_t, int64_t>> insert_ops;
 
     unordered_map<int64_t, int64_t> base_map;
-    HashMap m(10);
+    HashMap m(1000);
     cout << "Starting insert phase" << endl;
     { // Insert test
         // Generate insert operations
@@ -294,21 +298,21 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
 int main()
 {
     srand(time(NULL));
-    // // RB Tree tests
-    // cout << "Starting RB Tree tests" << endl;
+    // RB Tree tests
+    cout << "Starting RB Tree tests" << endl;
     // RBTreeTests::smallSimple();
     // RBTreeTests::largeRand();
-    // #ifdef USE_STM
-    // RBTreeTests::largeRandThreads(10, 10, 2);
-    // #endif
+    #ifdef USE_STM
+    RBTreeTests::largeRandThreads(100000, 10000, 30);
+    #endif
 
     // HashMap tests
     cout << "Starting HashMap tests" << endl;
-    #ifndef USE_STM
-    HashMapTests::largeRand();
-    #endif
+    // #ifndef USE_STM
+    // HashMapTests::largeRand();
+    // #endif
     #ifdef USE_STM
-    HashMapTests::largeRandThreads(10000, 1000, 30);
+    HashMapTests::largeRandThreads(100000, 10000, 30);
     #endif
 
     if (failures > 0) {

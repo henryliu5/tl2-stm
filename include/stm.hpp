@@ -23,11 +23,6 @@ class VersionedLock {
     bool locked;
     int64_t versionAtLock;
     int64_t globalClockAtLock;
-    
-
-    void incrementVersion(){
-        version = version + 1;
-    }
 
 public:
     thread::id owner;
@@ -38,19 +33,27 @@ public:
     }
 
     bool tryLock(int rv){
+        if((locked && (owner == this_thread::get_id()))) {
+            cout << "WARNING: potential lock" << endl;
+        }
         bool res = lock.try_lock();
         if(res){
             // Acquired lock
-            locked = true;
             versionAtLock = getVersion();
             globalClockAtLock = rv;
             owner = this_thread::get_id();
+            locked = true; 
+            //!!       I think it might be really important this "locked" is at the end here.
+            //!!       There are assertions sprinkled around that check isLocked() and check 
+            //!!       conditions about the above fields. If the fields are changed after locked,
+            //!!       then an assertion can see the lock is held, but get incorrect information
+            //!!       about the lock holder.
         }
         return res;
     }
 
     void unlock(int64_t new_version){
-        assert(owner == this_thread::get_id());
+        assert(locked && (owner == this_thread::get_id()));
         if(new_version <= version){
             cout << "new version > version " << new_version << " " << version << endl;
             cout << "version at lock: " << versionAtLock << endl;
@@ -58,15 +61,14 @@ public:
             assert(0);
         }
         version = new_version;
-        // TODO add a check to make sure this thread owns the lock
         
         // Version is advanced every successful lock release
-        // incrementVersion();
         locked = false;
         lock.unlock();
     }
 
     void abortUnlock(){
+        assert(locked && (owner == this_thread::get_id()));
         // Used by abort to unlock this lock without changing the version
         locked = false;
         lock.unlock();

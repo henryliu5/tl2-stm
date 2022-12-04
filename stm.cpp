@@ -1,6 +1,8 @@
 #include "include/stm.hpp"
 
 #include <iostream>
+#include <unistd.h>
+#include <thread>
 
 // struct LogEntry {
 //     intptr_t* addr;
@@ -56,20 +58,42 @@ void TxThread::txCommit()
     // 3. Lock write-set
     for (const auto& p : write_map) {
         VersionedLock* lock = &GET_LOCK(p.first);
+        if(locks_held.find(lock) != locks_held.end()){
+            // We already own this lock
+            continue;
+        }
+
+        assert(locks_held.find(lock) == locks_held.end());
+
         bool lock_acquired = false;
-        // Bounded spinning
+        
+        // useconds_t delay = 100;
+        // useconds_t MAX_DELAY = 100000;
+        // Bounded spinning with exponential backoff
+        assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
         for (int i = 0; i < 5; i++) {
+            assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
             if (lock->tryLock(rv)) {
                 lock_acquired = true;
                 locks_held.insert(lock);
                 break;
-            }
+            } 
+            // else {
+            //     usleep(delay);
+            //     if (delay < MAX_DELAY)
+            //     {
+            //         delay *= 2;
+            //     }
+            // }
         }
         if (!lock_acquired) {
+            // cout << "lacquire failed " << lock << " owner: " << lock->owner << endl;
             txAbort();
+            assert(0);
         }
     }
-    assert(locks_held.size() == write_map.size());
+
+    // assert(locks_held.size() == write_map.size()); // NOTE not true since hash collisions for address -> lock
 
     // 4. Increment global version-clock
     int64_t old_clock = global_version_clock.fetch_add(1);
@@ -92,6 +116,7 @@ void TxThread::txCommit()
             // Failed validation
             // cout << "failed validation" << endl;
             txAbort();
+            assert(0);
         }
     }
 
@@ -105,6 +130,8 @@ void TxThread::txCommit()
         assert(wv > write_lock->getVersion());
         assert(write_lock->isLocked());
         write_lock->unlock(wv);
+        // After releasing the lock, we can't be the owner anymore
+        assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
     }
     locks_held.clear();
     write_map.clear();
@@ -112,10 +139,12 @@ void TxThread::txCommit()
 
 void TxThread::txAbort()
 {
-    // cout << "abort: " << txCount << "\n";
     inTx = false;
     for(VersionedLock* write_lock: locks_held){
+        assert(write_lock->isLocked());
         write_lock->abortUnlock();
+        // After releasing the lock, we can't be the owner anymore
+        assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
     }
     // global_lock.unlock();
     locks_held.clear();
@@ -123,6 +152,7 @@ void TxThread::txAbort()
     wv = -1; // make it clear we can't use these until they are set later
     rv = -1;
     longjmp(jump_buffer, txCount);
+    assert(0);
 }
 
 // Cleanup after Tx
