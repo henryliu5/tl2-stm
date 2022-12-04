@@ -374,17 +374,17 @@ class RBTree {
         return 1 + sizeHelp(n->left) + sizeHelp(n->right);
     }
 
-    bool containsHelp(Node* n, int64_t key)
+    bool getHelp(Node* n, int64_t key)
     {
         if (!n)
             return false;
-        if (n->val == key) {
+        if (LOAD(n->val) == key) {
             return true;
         }
-        if (n->val < key) {
-            return containsHelp(n->right, key);
+        if (LOAD(n->val) < key) {
+            return getHelp(LOAD_NODE(n->right), key);
         }
-        return containsHelp(n->left, key);
+        return getHelp(LOAD_NODE(n->left), key);
     }
 
     int maxHeightHelp(Node *n){
@@ -486,9 +486,9 @@ public:
         return sizeHelp(root);
     }
 
-    bool contains(int key)
+    bool get(int key)
     {
-        return containsHelp(root, key);
+        return getHelp(root, key);
     }
 
     int maxHeight(){

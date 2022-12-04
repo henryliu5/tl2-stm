@@ -32,7 +32,7 @@ void checkOrderAndSize(unordered_set<int64_t>& s, RBTree& rb)
     }
 
     int height = rb.maxHeight();
-    if(height >= 2 * log2(v.size() + 1)){
+    if(v.size() != 0 && height >= 2 * log2(v.size() + 1)){
         cout << "Tree imbalanced, got height: " << height << " expected < " << 2 * log2(v.size() + 1) << " total nodes: " << v.size() << endl;
         failures++;
     }
@@ -72,7 +72,7 @@ void largeRand()
     // Check containment of whatever remains
     for (int i = 0; i < N; i++) {
         if (s.count(i) == 1) {
-            if (!rb.contains(i)) {
+            if (!rb.get(i)) {
                 cout << "set contained, but rb tree didn't: " << i << endl;
                 failures++;
             }
@@ -84,7 +84,8 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
 {
     // Do a bunch of random insertions
     cout << "Starting large rand with " << numThreads << " threads" << endl;
-
+    const int64_t keyMax = 20000;
+    const int64_t keyMin = 10000;
     vector<pair<int64_t, int64_t>> insert_ops;
     unordered_map<int64_t, int64_t> base_map;
     RBTree rb;
@@ -92,8 +93,6 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
     { // Insert test
         // Generate insert operations
         for (int i = 0; i < numInserts; i++) {
-            int64_t keyMax = 200;
-            int64_t keyMin = 100;
             int key = (rand() % (keyMax - keyMin)) + keyMin;
             // int64_t key = i % 1000;
             int64_t val = rand();
@@ -130,7 +129,7 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
     { // Delete tests
         vector<int64_t> delete_ops;
         for (int i = 0; i < numDeletes; i++) {
-            int64_t key = rand() % numInserts;
+            int key = (rand() % (keyMax - keyMin)) + keyMin;
             delete_ops.push_back(key);
             base_map.erase(key);
         }
@@ -308,7 +307,7 @@ int main()
     RBTreeTests::largeRand();
     #endif
     #ifdef USE_STM
-    RBTreeTests::largeRandThreads(100000, 10000, 30);
+    RBTreeTests::largeRandThreads(1000000, 100000, 30);
     #endif
 
     // HashMap tests
@@ -317,7 +316,7 @@ int main()
     HashMapTests::largeRand();
     #endif
     #ifdef USE_STM
-    HashMapTests::largeRandThreads(100000, 10000, 30);
+    HashMapTests::largeRandThreads(1000000, 100000, 30);
     #endif
 
     if (failures > 0) {

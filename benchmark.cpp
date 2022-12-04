@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <chrono>
 #include <random>
+#include <cstdlib>
 
 using namespace std;
 using std::chrono::high_resolution_clock;
@@ -71,7 +72,9 @@ void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts
                     rb.deleteKey(op.key);
                     TxEnd();
                 } else if(op.op_type == GET){
-                    // rb.contains(op.key);
+                    TxBegin();
+                    rb.get(op.key);
+                    TxEnd();
                 }
 
             }
@@ -91,9 +94,29 @@ void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts
 }
 
 int main(int argc, char** argv){
-    int N = 1000000; 
-    // small bench
-    benchmark(N, 30, 100, 200, 0.05, 0.05, 0.9);
+    assert(argc == 4);
+    int numThreads = atoi(argv[1]);
+    bool smallBench = argv[2][0] == 's';
+    bool readHeavy = argv[3][0] == 'r';
+
+    // Num samples
+    const int N = 1000000; 
+
+    int keyMin = 10000;
+    int keyMax = 20000;
+
+    if(smallBench){
+        keyMin = 100;
+        keyMax = 200;
+    }
+
+    if(readHeavy){
+        benchmark(N, numThreads, keyMin, keyMax, 0.05, 0.05, 0.9);
+    } else {
+        benchmark(N, numThreads, keyMin, keyMax, 0.3, 0.3, 0.4);
+    }
+    
+
     // benchmark(N, 4, 100, 200, 0.05, 0.05, 0.9);
     // benchmark(N, 8, 100, 200, 0.05, 0.05, 0.9);
     // benchmark(N, 16, 100, 200, 0.05, 0.05, 0.9);
