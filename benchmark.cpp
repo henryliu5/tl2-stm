@@ -1,4 +1,5 @@
 #include "include/RBTree.hpp"
+#include "include/HashMap.hpp"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -20,6 +21,79 @@ typedef struct Operation {
     OperationType op_type;
     int64_t key;
 } Operation;
+
+/**
+ * @brief Benchmarking for RB tree
+ * 
+ * @param totalOps Total operations to benchmark
+ * @param keyMin Min value in key range
+ * @param keyMax Max value in key range
+ * @param puts Proportion of puts
+ * @param deletes Proportion of deletes
+ * @param gets Proportion of gets
+ */
+void hashbenchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts, double deletes, double gets){
+    HashMap m(100000);
+    vector<Operation> ops;
+    for(int i = 0; i < totalOps; i++){
+        int key = (rand() % (keyMax - keyMin)) + keyMin;
+        double type = rand() / double(RAND_MAX);
+        if(type < puts){
+            ops.push_back(Operation{PUT, key});
+            // rb.insert(key);
+        } else if(type < puts + deletes){
+            ops.push_back(Operation{DELETE, key});
+            // rb.deleteKey(key);
+        } else{
+            ops.push_back(Operation{GET, key});
+            // rb.contains(key);
+        }
+    }
+
+    assert(ops.size() == (size_t) totalOps);
+
+    // Shuffle operations
+    auto rng = default_random_engine {};
+    shuffle(begin(ops), end(ops), rng);
+    cout << "Starting benchmark" << endl;
+    auto t1 = high_resolution_clock::now();
+    vector<thread> workers;
+    // Spawn threads
+    for (int thread_id = 0; thread_id < numThreads; thread_id++) {
+        workers.push_back(thread([&m, thread_id, numThreads, totalOps, ops]() {
+            for (int i = thread_id; i < totalOps; i += numThreads) {
+                // cout << "worker " << thread_id << " doing op "  << i << "\n";
+                Operation op = ops[i];
+                if(op.op_type == PUT){
+                    TxBegin();
+                    m.put(op.key, 0);
+                    TxEnd();
+                } else if(op.op_type == DELETE){
+                    TxBegin();
+                    m.remove(op.key);
+                    TxEnd();
+                } else if(op.op_type == GET){
+                    TxBegin();
+                    int64_t res;
+                    m.get(op.key, res);
+                    TxEnd();
+                }
+
+            }
+        }));
+    }
+    // Barrier
+    for_each(workers.begin(), workers.end(), [](thread& t) {
+        t.join();
+    });
+    auto t2 = high_resolution_clock::now();
+    /* Getting number of milliseconds as a double. */
+    duration<double, std::milli> ms_double = t2 - t1;
+    duration<double> s_double = t2 - t1;
+    cout << "Threads: " << numThreads << endl;
+    cout << "\t" << ms_double.count() << "ms\n";
+    cout << "\t" << (totalOps / s_double.count()) / 1000.0 << " 1000x ops per second\n";
+}
 
 /**
  * @brief Benchmarking for RB tree

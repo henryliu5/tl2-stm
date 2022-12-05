@@ -275,7 +275,7 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
         }
         // Shuffle key value operations
         auto rng = default_random_engine {};
-        shuffle(begin(insert_ops), end(insert_ops), rng);
+        shuffle(begin(delete_ops), end(delete_ops), rng);
 
         vector<thread> workers;
         // Spawn threads
@@ -310,14 +310,14 @@ int main()
     RBTreeTests::largeRandThreads(1000000, 1000000, 30);
     #endif
 
-    // // HashMap tests
-    // cout << "Starting HashMap tests" << endl;
-    // #ifndef USE_STM
-    // HashMapTests::largeRand();
-    // #endif
-    // #ifdef USE_STM
-    // HashMapTests::largeRandThreads(100000, 100000, 30);
-    // #endif
+    // HashMap tests
+    cout << "Starting HashMap tests" << endl;
+    #ifndef USE_STM
+    HashMapTests::largeRand();
+    #endif
+    #ifdef USE_STM
+    HashMapTests::largeRandThreads(100000, 10000, 30);
+    #endif
 
     if (failures > 0) {
         cout << "\nFailed " << failures << " tests!!!" << endl;

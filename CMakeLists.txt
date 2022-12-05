@@ -3,13 +3,15 @@ project(TL2_STM)
 
 set(CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+add_definitions(-g)
+
 set(SRC_FILES main.cpp stm.cpp)
 set(ALL_TEST_FILES tests.cpp stm.cpp)
 set(BENCHMARK_FILES benchmark.cpp stm.cpp)
 set(TX_TEST_FILES tx_test.cpp stm.cpp stm.cpp)
 
 # Global settings
-add_definitions(-Wall -Werror -g)
+add_definitions(-Wall -Werror)
 link_libraries(pthread)
 
 add_executable(main ${SRC_FILES})
