@@ -110,8 +110,10 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
                 _thread_id = thread_id;
                 for (int i = thread_id; i < numInserts; i += numThreads) {
                     TxBegin();
-                    rb.insert(insert_ops[i].first);
+                    Node* x = rb.insert(insert_ops[i].first);
                     TxEnd();
+                    cout << "received node: " << x << endl;
+                    cout << "color: " << x->color << endl;
                 }
             }));
         }
@@ -307,17 +309,17 @@ int main()
     RBTreeTests::largeRand();
     #endif
     #ifdef USE_STM
-    RBTreeTests::largeRandThreads(1000000, 100000, 30);
+    RBTreeTests::largeRandThreads(2, 0, 1);
     #endif
 
-    // HashMap tests
-    cout << "Starting HashMap tests" << endl;
-    #ifndef USE_STM
-    HashMapTests::largeRand();
-    #endif
-    #ifdef USE_STM
-    HashMapTests::largeRandThreads(1000000, 100000, 30);
-    #endif
+    // // HashMap tests
+    // cout << "Starting HashMap tests" << endl;
+    // #ifndef USE_STM
+    // HashMapTests::largeRand();
+    // #endif
+    // #ifdef USE_STM
+    // HashMapTests::largeRandThreads(1000000, 100000, 30);
+    // #endif
 
     if (failures > 0) {
         cout << "\nFailed " << failures << " tests!!!" << endl;

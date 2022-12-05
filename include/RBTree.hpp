@@ -9,13 +9,16 @@ using namespace std;
 
 #define LOAD_NODE(addr) ((Node*) LOAD(addr))
 
-enum COLOR { RED,
-    BLACK };
+// enum COLOR { RED,
+//     BLACK };
+#define BLACK 1
+#define RED 0
+#define COLOR int64_t
 
 class Node {
 public:
     int64_t val;
-    COLOR color;
+    int64_t color;
     Node *left, *right, *parent;
 
     Node(int val)
@@ -43,7 +46,15 @@ public:
     }
 
     // check if node is left child of parent
-    bool isOnLeft() { return this == LOAD_NODE(LOAD_NODE(parent)->left); }
+    bool isOnLeft() {
+        cout << "x" << endl;
+        LOAD_NODE(parent);
+        cout << "y" << endl;
+        cout << "parent: " <<  LOAD_NODE(parent) << endl;
+        cout << LOAD_NODE(parent)->left << endl;
+        assert(parent != NULL);
+        return this == LOAD_NODE(LOAD_NODE(parent)->left); 
+    }
 
     // returns pointer to sibling
     Node* sibling()
@@ -155,8 +166,10 @@ class RBTree {
         Node* parent = LOAD_NODE(x->parent);
         Node* grandparent = LOAD_NODE(parent->parent);
         Node* uncle = x->uncle();
-
+        cout << "parent color before check: " << parent->color << endl;
+        cout << "parent color from LOAD" << LOAD(parent->color) << endl;
         if (LOAD(parent->color) != BLACK) {
+            cout << "parent not black" << endl;
             if (uncle != NULL && LOAD(uncle->color) == RED) {
                 // uncle red, perform recoloring and recurse
                 STORE(parent->color, BLACK);
@@ -425,20 +438,22 @@ public:
     }
 
     // inserts the given value to tree
-    void insert(int64_t n)
+    Node* insert(int64_t n)
     {
         Node* newNode = new Node(n);
+        cout << "creating new addr: " << newNode << endl;
         if (LOAD_NODE(root) == NULL) {
             // when root is null
             // simply insert value at root
             newNode->color = BLACK;
             STORE(root, newNode);
+            cout << "inserted root, colored black" << endl;
         } else {
             Node* temp = search(n);
 
             if (LOAD(temp->val) == n) {
                 // return if value already exists
-                return;
+                return temp;
             }
 
             // if value is not found, search returns the node
@@ -446,7 +461,8 @@ public:
 
             // connect new node to correct node
             newNode->parent = temp;
-
+            cout << "setting parent: " << temp << endl;
+            cout << "parent color: " << temp->color << endl;
             if (n < LOAD(temp->val))
                 STORE(temp->left, newNode);
             else
@@ -455,6 +471,9 @@ public:
             // fix red red voilaton if exists
             fixRedRed(newNode);
         }
+        cout << "before return color: " << newNode->color << endl;
+        cout << "addr of color: " << &(newNode->color) << endl;
+        return newNode;
     }
 
     // utility function that deletes the node with given value

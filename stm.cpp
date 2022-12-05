@@ -183,7 +183,7 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     int64_t prior_version = lock->getVersion();
 
     if (write_map.find(addr) != write_map.end()) {
-        // cout << "getting from write map: addr " << addr << " val: " << (int64_t) write_map[addr] << endl;
+        cout << "getting from write map: addr " << addr << " val: " << (int64_t) write_map[addr] << endl;
         return write_map[addr];
     }
     intptr_t return_value = *addr;
@@ -192,6 +192,7 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     if (lock->getVersion() != prior_version || lock->isLocked() || lock->getVersion() > rv) {
         txAbort();
     }
+    cout << "load: " << addr << " value: " << return_value << endl;
     return return_value;
 }
 

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(TL2_STM)
 
 set(CMAKE_CXX_STANDARD 17)
-
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 set(SRC_FILES main.cpp stm.cpp)
 set(ALL_TEST_FILES tests.cpp stm.cpp)
 set(BENCHMARK_FILES benchmark.cpp stm.cpp)
