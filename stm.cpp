@@ -3,6 +3,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <thread>
+#include <malloc.h>
+#include <set>
 
 // struct LogEntry {
 //     intptr_t* addr;
@@ -35,6 +37,8 @@ TxThread::TxThread()
 // Start new transaction
 void TxThread::txBegin()
 {
+    // cout << "begin" << endl;
+    freed.clear();
     // Profiling/misc. info
     if (inTx)
         cout << "WARNING: txBegin() called but already in Tx" << endl;
@@ -47,6 +51,9 @@ void TxThread::txBegin()
     if (locks_held.size() > 0)
         cout << "WARNING: txBegin() called but holding locks" << endl;
 
+    assert(speculative_malloc.size() == 0);
+    assert(speculative_free.size() == 0);
+
     // Step 1. Sample global version-clock
     rv = global_version_clock.load();
     // global_lock.lock();
@@ -55,6 +62,7 @@ void TxThread::txBegin()
 // Called by txEnd at the end of a transaction
 void TxThread::txCommit()
 {
+    // cout << "in commit " << endl;
     // 3. Lock write-set
     for (const auto& p : write_map) {
         VersionedLock* lock = &GET_LOCK(p.first);
@@ -133,6 +141,13 @@ void TxThread::txCommit()
         // After releasing the lock, we can't be the owner anymore
         assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
     }
+
+    for(void* addr: speculative_free){
+        free(addr);
+    }
+    speculative_malloc.clear();
+    speculative_free.clear();
+
     locks_held.clear();
     write_map.clear();
 }
@@ -140,6 +155,7 @@ void TxThread::txCommit()
 void TxThread::txAbort()
 {
     inTx = false;
+    freeSpeculativeMalloc();
     for(VersionedLock* write_lock: locks_held){
         assert(write_lock->isLocked());
         write_lock->abortUnlock();
@@ -181,6 +197,10 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     read_set.push_back(addr);
     VersionedLock* lock = &GET_LOCK(addr);
     int64_t prior_version = lock->getVersion();
+    if (lock->isLocked() || lock->getVersion() > rv) {
+        txAbort();
+        assert(0);
+    }
 
     if (write_map.find(addr) != write_map.end()) {
         // cout << "getting from write map: addr " << addr << " val: " << (int64_t) write_map[addr] << endl;
@@ -207,4 +227,106 @@ void TxThread::txStore(intptr_t* addr, intptr_t val)
     // cout << "setting addr: " << addr << " val: " << val << endl;
     // Speculative, just write to log
     write_map[addr] = val;
+}
+
+void* TxThread::txMalloc(size_t size)
+{
+    assert(size != 0);
+    if (!inTx) {
+        return malloc(size);
+    }
+    void* ptr = malloc(size);
+    read_set.push_back((intptr_t*) ptr);
+    speculative_malloc.push_back(ptr);
+    return ptr;
+}
+
+void TxThread::txFree(void* addr)
+{
+    assert(addr != 0);
+    if (!inTx) {
+        return free(addr);
+    }
+
+    // NOTE: Can't really do anything to this address, just trusting users don't have use-after-free
+    read_set.push_back((intptr_t*) addr);
+    write_map[(intptr_t*) addr] = 0;
+    speculative_free.push_back(addr);
+
+    // // 2. Pre-validation
+    // read_set.push_back((intptr_t*) addr);
+    // VersionedLock* lock = &GET_LOCK(addr);
+    // int64_t prior_version = lock->getVersion();
+
+    // // 2. Post-validation
+    // if (lock->getVersion() != prior_version || lock->isLocked() || lock->getVersion() > rv) {
+    //     txAbort();
+    // }
+
+    // size_t object_size = malloc_usable_size(addr);
+    // // We are effectively "writing" at all byte locations in the object by freeing it - add these to the 
+    // // write set
+    // for(char* temp = (char*) addr; temp < (char*) addr + object_size; temp += 2){
+    //     write_map[(intptr_t*) temp] = 0;
+    // }
+}
+
+void TxThread::waitForQuiesce(void* base){
+    assert(0);
+    // size_t object_size = malloc_usable_size(base);
+    // set<VersionedLock*> all_object_locks;
+    // for(uint64_t temp = (uint64_t) base; temp < (uint64_t) base + (uint64_t) object_size; temp++){
+    //     all_object_locks.insert(&GET_LOCK(temp));
+    // }
+    // for(VersionedLock* lock: all_object_locks){
+    //     lock->waitLock();
+    // }
+    // free(base);
+
+    // for(VersionedLock* lock: all_object_locks){
+    //     lock->unlock(global_version_clock.load());
+    // }
+}
+
+void TxThread::freeSpeculativeMalloc(){
+    for(void* addr: speculative_malloc){
+        assert(freed.count(addr) == 0);
+        free(addr);
+        freed.insert(addr);
+    }
+    speculative_malloc.clear();
+    speculative_free.clear();
+}
+
+void TxThread::freeSpeculativeFree(){
+    assert(0);
+    // // Called by txCommit, actually perform frees, leave mallocs be
+    // for(void* addr: speculative_free){
+    //     assert(freed.count(addr) == 0);
+    //     VersionedLock* write_lock = &GET_LOCK((intptr_t*) addr);
+    //     assert(wv > write_lock->getVersion());
+    //     assert(write_lock->isLocked() && write_lock->owner == this_thread::get_id());
+
+    //     // // We want to make sure we invalidate all future reads
+    //     // waitForQuiesce(addr);
+    //     //!! In the paper they 'wait for objects to quiesce here'
+    //     //!! to me it is unclear what this means, or at least the literal interpretation
+    //     //!! has poor performance. The idea is to invalidate future readers and wait for writers to finish
+    //     //!! To me this means that to wait for an object to 'quiesce' it must essentially
+    //     //!! capture all locks relevant to the object
+    //     //!! Instead my approach treats the entire object as part of the write set when calling TxFree
+
+    //     size_t object_size = malloc_usable_size(addr);
+    //     for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + (uint64_t) object_size; temp++){
+    //         VersionedLock* write_lock = &GET_LOCK((intptr_t*) addr);
+    //         assert(locks_held.count(write_lock) == 1);
+    //         assert(wv > write_lock->getVersion());
+    //         assert(write_lock->isLocked() && write_lock->owner == this_thread::get_id());
+    //     }
+
+    //     free(addr);
+    //     freed.insert(addr);
+    // }
+    // speculative_malloc.clear();
+    // speculative_free.clear();
 }

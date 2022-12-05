@@ -307,17 +307,17 @@ int main()
     RBTreeTests::largeRand();
     #endif
     #ifdef USE_STM
-    RBTreeTests::largeRandThreads(1000000, 100000, 30);
+    RBTreeTests::largeRandThreads(1000000, 1000000, 30);
     #endif
 
-    // HashMap tests
-    cout << "Starting HashMap tests" << endl;
-    #ifndef USE_STM
-    HashMapTests::largeRand();
-    #endif
-    #ifdef USE_STM
-    HashMapTests::largeRandThreads(1000000, 100000, 30);
-    #endif
+    // // HashMap tests
+    // cout << "Starting HashMap tests" << endl;
+    // #ifndef USE_STM
+    // HashMapTests::largeRand();
+    // #endif
+    // #ifdef USE_STM
+    // HashMapTests::largeRandThreads(100000, 100000, 30);
+    // #endif
 
     if (failures > 0) {
         cout << "\nFailed " << failures << " tests!!!" << endl;

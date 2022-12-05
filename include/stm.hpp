@@ -54,7 +54,7 @@ public:
 
     void unlock(int64_t new_version){
         assert(locked && (owner == this_thread::get_id()));
-        if(new_version <= version){
+        if(new_version < version){
             cout << "new version > version " << new_version << " " << version << endl;
             cout << "version at lock: " << versionAtLock << endl;
             cout << "rv at lock: " << globalClockAtLock << endl;
@@ -77,6 +77,21 @@ public:
     bool isLocked(){
         return locked;
     }
+
+    void waitLock(){
+        lock.lock();
+        versionAtLock = getVersion();
+        owner = this_thread::get_id();
+        locked = true; 
+    }
+
+    // void forceSetVersionUnlock(int64_t v){
+    //     version = v;
+    //     if(locked){
+    //         locked = false;
+    //         lock.unlock();
+    //     }
+    // }
 };
 
 // Per stripe lock array - basically just a hash map
@@ -90,9 +105,16 @@ class TxThread {
     unordered_set<VersionedLock*> locks_held;
     vector<intptr_t*> read_set;
     unordered_map<intptr_t*, intptr_t> write_map;
+    vector<void*> speculative_malloc;
+    vector<void*> speculative_free;
+    unordered_set<void*> freed;
 
     void txAbort();
     void txCommit();
+    void freeSpeculativeMalloc();
+    void freeSpeculativeFree();
+    void waitForQuiesce(void*);
+
 public:
     TxThread();
 
@@ -101,6 +123,9 @@ public:
 
     intptr_t txLoad(intptr_t* addr);
     void txStore(intptr_t* addr, intptr_t val);
+
+    void* txMalloc(size_t);
+    void txFree(void* p);
 
     jmp_buf jump_buffer;
     bool inTx; // Currently no nesting
@@ -120,10 +145,13 @@ inline thread_local int _thread_id;
 #ifdef USE_STM
 #define LOAD(var) (_my_thread.txLoad((intptr_t*)&var))
 #define STORE(var, val) (_my_thread.txStore((intptr_t*)&var, (intptr_t)val))
-
+#define MALLOC(size) (_my_thread.txMalloc(size))
+#define FREE(ptr) (_my_thread.txFree(ptr))
 #else
 #define LOAD(var) (var)
 #define STORE(var, val) (var = val)
+#define MALLOC(size) (malloc(size))
+#define FREE(ptr) (free(ptr))
 #endif
 
 #ifdef USE_STM

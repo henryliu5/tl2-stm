@@ -8,9 +8,11 @@
 using namespace std;
 
 #define LOAD_NODE(addr) ((Node*) LOAD(addr))
-
-enum COLOR { RED,
-    BLACK };
+#define COLOR int64_t
+#define RED 0
+#define BLACK 1
+// enum COLOR { RED,
+//     BLACK };
 
 class Node {
 public:
@@ -255,6 +257,14 @@ class RBTree {
                 }
             }
             // delete v; // TODO handle memory management
+            // v->~Node();
+            STORE(v->color, RED);
+            STORE(v->left, NULL);
+            STORE(v->right, NULL);
+            STORE(v->left, NULL);
+            STORE(v->parent, NULL);
+            STORE(*v, 0);
+            FREE(v);
             return;
         }
 
@@ -266,6 +276,13 @@ class RBTree {
                 STORE(v->left, NULL);
                 STORE(v->right, NULL);
                 // delete u; // TODO handle memory management
+                STORE(u->color, RED);
+                STORE(u->left, NULL);
+                STORE(u->right, NULL);
+                STORE(u->left, NULL);
+                STORE(u->parent, NULL);
+                STORE(*u, 0);
+                FREE(u);
             } else {
                 // Detach v from tree and move u up
                 if (v->isOnLeft()) {
@@ -274,6 +291,14 @@ class RBTree {
                     STORE(parent->right, u);
                 }
                 // delete v; // TODO handle memory management
+                STORE(v->color, RED);
+                STORE(v->left, NULL);
+                STORE(v->right, NULL);
+                STORE(v->left, NULL);
+                STORE(v->parent, NULL);
+                STORE(*v, 0);
+                FREE(v);
+                
                 STORE(u->parent, parent);
                 if (uvBlack) {
                     // u and v both black, fix double black at u
@@ -427,7 +452,11 @@ public:
     // inserts the given value to tree
     void insert(int64_t n)
     {
-        Node* newNode = new Node(n);
+        // Node* newNode = new Node(n);
+        void* newNodeMem = MALLOC(sizeof(Node));
+        // The "placement new"
+        Node* newNode = new(newNodeMem) Node(n);
+
         if (LOAD_NODE(root) == NULL) {
             // when root is null
             // simply insert value at root
@@ -488,7 +517,7 @@ public:
 
     bool get(int key)
     {
-        return getHelp(root, key);
+        return getHelp(LOAD_NODE(root), key);
     }
 
     int maxHeight(){
