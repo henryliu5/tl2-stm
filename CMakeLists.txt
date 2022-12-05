@@ -21,3 +21,7 @@ add_executable(bench ${BENCHMARK_FILES})
 target_compile_definitions(tx_test PUBLIC USE_STM)
 target_compile_definitions(stm_tests PUBLIC USE_STM)
 target_compile_definitions(bench PUBLIC USE_STM)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../my_tl2_lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../my_tl2_lib)
+add_library(tl2 STATIC include/stm.hpp stm.cpp stamp_include/stm.h)
