@@ -9,12 +9,17 @@
 #include <chrono>
 #include <random>
 #include <cstdlib>
+#include <boost/program_options.hpp>
+#include <fstream>
+namespace po = boost::program_options;
 
 using namespace std;
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
+
+std::ofstream outfile;
 
 enum OperationType { PUT, DELETE, GET };
 typedef struct Operation {
@@ -23,7 +28,7 @@ typedef struct Operation {
 } Operation;
 
 /**
- * @brief Benchmarking for RB tree
+ * @brief Benchmarking for HashMap
  * 
  * @param totalOps Total operations to benchmark
  * @param keyMin Min value in key range
@@ -93,6 +98,7 @@ void hashbenchmark(int totalOps, int numThreads, int keyMin, int keyMax, double 
     cout << "Threads: " << numThreads << endl;
     cout << "\t" << ms_double.count() << "ms\n";
     cout << "\t" << (totalOps / s_double.count()) / 1000.0 << " 1000x ops per second\n";
+    outfile << (totalOps / s_double.count()) / 1000.0 << endl;
 }
 
 /**
@@ -165,35 +171,76 @@ void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts
     cout << "Threads: " << numThreads << endl;
     cout << "\t" << ms_double.count() << "ms\n";
     cout << "\t" << (totalOps / s_double.count()) / 1000.0 << " 1000x ops per second\n";
+    outfile << (totalOps / s_double.count()) / 1000.0 << endl;
 }
 
 int main(int argc, char** argv){
     assert(argc == 4);
-    int numThreads = atoi(argv[1]);
-    bool smallBench = argv[2][0] == 's';
-    bool readHeavy = argv[3][0] == 'r';
+    // int numThreads = atoi(argv[1]);
+    // bool smallBench = argv[2][0] == 's';
+    // bool readHeavy = argv[3][0] == 'r';
+
+    // Declare the supported options.
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help", "produce help message")
+        ("output-file,o", po::value<string>(), "Output filename. Required.")
+        ("num-threads,n", po::value<int>(), "Number of threads. Required.")
+        ("type,t", po::value<string>(), "Type of data structure to run (hash, rb). Required.")
+        ("config,c", po::value<string>(), "Type of workload (read, mixed). Required.")
+        ("key-range,k", po::value<string>(), "Workload key range (small, large). Required.")
+    ;
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);    
+
+    if (vm.count("help")) {
+        cout << desc << "\n";
+        return 1;
+    }
 
     // Num samples
     int N = 1000000; 
+    int keyMin = -1;
+    int keyMax = -1;
+    double puts = -1;
+    double deletes = -1;
+    double gets = -1;
 
-    int keyMin = 10000;
-    int keyMax = 20000;
+    int numThreads = vm["num-threads"].as<int>();
 
-    if(smallBench){
+    if(vm["key-range"].as<string>() == "small"){
         keyMin = 100;
         keyMax = 200;
-    }
-
-    if(readHeavy){
-        benchmark(N, numThreads, keyMin, keyMax, 0.05, 0.05, 0.9);
+    } else if(vm["key-range"].as<string>() == "large"){
+        keyMin = 10000;
+        keyMax = 20000;
     } else {
-        benchmark(N, numThreads, keyMin, keyMax, 0.3, 0.3, 0.4);
+        cout << "unsupported key range" << endl;
     }
-    
 
-    // benchmark(N, 4, 100, 200, 0.05, 0.05, 0.9);
-    // benchmark(N, 8, 100, 200, 0.05, 0.05, 0.9);
-    // benchmark(N, 16, 100, 200, 0.05, 0.05, 0.9);
-    // benchmark(N, 32, 100, 200, 0.05, 0.05, 0.9);
-    // largeRandThreads(N, 2, 100, 200, 0.05, 0.05, 0.9);
+    if(vm["config"].as<string>() == "read"){
+        // Read heavy
+        puts = 0.05;
+        deletes = 0.05;
+        gets = 0.9;
+    } else if(vm["config"].as<string>() == "mixed"){
+        puts = 0.3;
+        deletes = 0.3;
+        gets = 0.4;
+    } else {
+        cout << "unsupported config" << endl;
+    }
+
+    if(vm.count("output-file"))
+        outfile.open(vm["output-file"].as<string>(), std::ios_base::app); // append instead of overwrite
+
+    if(vm["type"].as<string>() == "hash"){
+        hashbenchmark(N, numThreads, keyMin, keyMax, puts, deletes, gets);
+    } else if(vm["type"].as<string>() == "rb"){
+        benchmark(N, numThreads, keyMin, keyMax, puts, deletes, gets);
+    } else {
+        cout << "unsupported data structure type" << endl;
+    }
 }
