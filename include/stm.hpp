@@ -111,12 +111,12 @@ class TxThread {
     vector<VersionedLock*> speculative_free_locks;
     unordered_set<void*> freed;
 
-    void txAbort();
+    
     void txCommit();
     void freeSpeculativeMalloc();
     void freeSpeculativeFree();
     void waitForQuiesce(void*);
-
+    
 public:
     TxThread();
 
@@ -128,6 +128,9 @@ public:
 
     void* txMalloc(size_t);
     void txFree(void* p);
+
+    bool inReadSet(uint64_t);
+    void txAbort();
 
     jmp_buf jump_buffer;
     bool inTx; // Currently no nesting
@@ -148,8 +151,8 @@ inline thread_local int _thread_id;
 #define LOAD(var) (_my_thread.txLoad((intptr_t*)&var))
 #define STORE(var, val) (_my_thread.txStore((intptr_t*)&var, (intptr_t)val))
 #define MALLOC(size) (_my_thread.txMalloc(size))
-// #define FREE(ptr) (_my_thread.txFree(ptr))
-#define FREE(ptr) ({})
+#define FREE(ptr) (_my_thread.txFree(ptr))
+// #define FREE(ptr) ({})
 #else
 #define LOAD(var) (var)
 #define STORE(var, val) (var = val)

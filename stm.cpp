@@ -5,22 +5,29 @@
 #include <thread>
 #include <malloc.h>
 #include <set>
+#include <algorithm>
+#include <signal.h>
 
-// struct LogEntry {
-//     intptr_t* addr;
-//     intptr_t val;
-// };
-// class Log {
-//     // vector<LogEntry> write_log;
-//     unordered_map<intptr_t*, intptr_t> write_map;
-// public:
-//     void commit()
-//     {
-//         for (const auto& p : write_map) {
-//             *(p.first) = p.second;
-//         }
-//     }
-// };
+bool TxThread::inReadSet(uint64_t addr){
+    return find(read_set.begin(), read_set.end(), (intptr_t*) addr) != read_set.end();
+}
+
+
+void raceHandler(int signum, siginfo_t * sig_info, void* context){
+    uint64_t faulted_addr = (uint64_t) sig_info->si_addr;
+    psignal(signum, "Possible UAF");
+    if(_my_thread.inReadSet(faulted_addr)){
+        _my_thread.txAbort();
+    }
+}
+
+void registerSignalHandlers(){
+    struct sigaction sig_handler;
+    sig_handler.sa_sigaction = raceHandler;
+    sigemptyset(&sig_handler.sa_mask);
+    sig_handler.sa_flags = SA_SIGINFO;
+    sigaction(SIGSEGV, &sig_handler, NULL);
+}
 
 TxThread::TxThread()
     : rv { 0 }
@@ -32,6 +39,7 @@ TxThread::TxThread()
     , numStores(0)
 
 {
+    registerSignalHandlers();
 }
 
 // Start new transaction
@@ -178,9 +186,9 @@ void TxThread::txCommit()
                 cout << "missing lock: " << lock << endl;
                 // assert(0);
             }
-            // assert(locks_held.count(lock) == 1);
-            // assert(lock->owner == this_thread::get_id());
-            // assert(lock->isLocked());
+            assert(locks_held.count(lock) == 1);
+            assert(lock->owner == this_thread::get_id());
+            assert(lock->isLocked());
         }
     }
 
