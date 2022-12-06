@@ -208,7 +208,6 @@ void TxThread::txEnd()
 intptr_t TxThread::txLoad(intptr_t* addr)
 {
     assert(addr != NULL);
-    numLoads++;
     if (!inTx) {
         return *addr;
     }
@@ -217,7 +216,7 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     read_set.push_back(addr);
     VersionedLock* lock = &GET_LOCK(addr);
     int64_t prior_version = lock->getVersion();
-    if (lock->isLocked() || lock->getVersion() > rv) {
+    if (lock->isLocked() || prior_version > rv) {
         txAbort();
         assert(0);
     }
@@ -228,8 +227,9 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     }
     intptr_t return_value = *addr;
 
+    int64_t new_version = lock->getVersion();
     // 2. Post-validation
-    if (lock->getVersion() != prior_version || lock->isLocked() || lock->getVersion() > rv) {
+    if (new_version != prior_version || lock->isLocked() || new_version > rv) {
         txAbort();
     }
     return return_value;
@@ -242,7 +242,7 @@ void TxThread::txStore(intptr_t* addr, intptr_t val)
         *(addr) = val;
         return;
     }
-    numStores++;
+
     // cout << "setting addr: " << addr << " val: " << val << endl;
     // Speculative, just write to log
     write_map[addr] = val;
@@ -256,7 +256,7 @@ void* TxThread::txMalloc(size_t size)
         return malloc(size);
     }
     void* ptr = malloc(size);
-    read_set.push_back((intptr_t*) ptr);
+    // read_set.push_back((intptr_t*) ptr);
     speculative_malloc.push_back(ptr);
     return ptr;
 }
@@ -269,17 +269,15 @@ void TxThread::txFree(void* addr)
     }
     // cout << "marking free: " << addr << endl;
     // NOTE: Can't really do anything to this address, just trusting users don't have use-after-free
-    read_set.push_back((intptr_t*) addr);
+    // read_set.push_back((intptr_t*) addr);
     write_map[(intptr_t*) addr] = 0;
     speculative_free.push_back(addr);
 
     // 2. Pre-validation
-    read_set.push_back((intptr_t*) addr);
     VersionedLock* lock = &GET_LOCK(addr);
-    int64_t prior_version = lock->getVersion();
 
     // 2. Post-validation
-    if (lock->getVersion() != prior_version || lock->isLocked() || lock->getVersion() > rv) {
+    if (lock->isLocked() || lock->getVersion() > rv) {
         txAbort();
     }
 
