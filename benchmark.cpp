@@ -146,7 +146,7 @@ void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts
                     rb.deleteKey(op.key);
                     TxEnd();
                 } else if(op.op_type == GET){
-                    TxBegin();
+                    TxBeginReadOnly();
                     rb.get(op.key);
                     TxEnd();
                 }
@@ -174,7 +174,7 @@ int main(int argc, char** argv){
     bool readHeavy = argv[3][0] == 'r';
 
     // Num samples
-    const int N = 1000000; 
+    int N = 1000000; 
 
     int keyMin = 10000;
     int keyMax = 20000;

@@ -218,6 +218,16 @@ intptr_t TxThread::txLoad(intptr_t* addr)
         return *addr;
     }
 
+    if(read_only){
+        intptr_t return_value = *addr;
+        VersionedLock* lock = &GET_LOCK(addr);
+        // 2. Post-validation
+        if (lock->isLocked() || lock->getVersion() > rv) {
+            txAbort();
+        }
+        return return_value;
+    }
+
     // 2. Pre-validation
     read_set.push_back(addr);
     VersionedLock* lock = &GET_LOCK(addr);

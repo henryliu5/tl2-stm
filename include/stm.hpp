@@ -133,6 +133,7 @@ public:
     int txCount;
     int numLoads;
     int numStores;
+    bool read_only;
 };
 
 
@@ -156,11 +157,13 @@ inline thread_local int _thread_id;
 #endif
 
 #ifdef USE_STM
-#define TxBegin() setjmp(_my_thread.jump_buffer); _my_thread.txBegin();
+#define TxBegin() _my_thread.read_only = false; setjmp(_my_thread.jump_buffer); _my_thread.txBegin();
 #define TxEnd() (_my_thread.txEnd())
+#define TxBeginReadOnly() _my_thread.read_only = true; setjmp(_my_thread.jump_buffer); _my_thread.txBegin();
 #else
 #define TxBegin() ({})
 #define TxEnd() ({})
+#define TxBeginReadOnly() ({})
 #endif
 
 #endif
