@@ -133,10 +133,10 @@ void TxThread::txCommit()
     }
 
     // Check that we have the locks for everything we will eventually free
-    #ifdef NDEBUG
+    #ifndef NDEBUG
     for(void* addr: speculative_free){
         size_t object_size = malloc_usable_size(addr);
-        for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + object_size; temp ++){
+        for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + object_size; temp+= 8){
             VersionedLock* lock = &GET_LOCK((intptr_t*) temp);
             if(locks_held.count(lock) != 1){
                 cout << "missing lock: " << lock << endl;
@@ -284,7 +284,7 @@ void TxThread::txFree(void* addr)
     size_t object_size = malloc_usable_size(addr);
     // We are effectively "writing" at all byte locations in the object by freeing it - add these to the 
     // write set
-    for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + object_size; temp ++){
+    for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + object_size; temp += 8){
         VersionedLock* lock = &GET_LOCK((intptr_t*) temp);
         required_write_locks.push_back(lock);
     }
