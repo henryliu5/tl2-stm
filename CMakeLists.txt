@@ -26,4 +26,4 @@ target_compile_definitions(bench PUBLIC USE_STM)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../my_tl2_lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../my_tl2_lib)
-add_library(tl2 STATIC include/stm.hpp stm.cpp stamp_include/stm.h)
+add_library(tl2 STATIC include/stm.hpp stm.cpp my_tl2_lib/stm.h)
