@@ -88,7 +88,7 @@ void TxThread::txCommit()
         assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
         for (int i = 0; i < 5; i++) {
             assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
-            if (lock->tryLock(rv)) {
+            if (lock->tryLock()) {
                 lock_acquired = true;
                 locks_held.insert(lock);
                 break;

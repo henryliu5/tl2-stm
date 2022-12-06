@@ -23,7 +23,6 @@ class VersionedLock {
     mutex lock;
     bool locked;
     int64_t versionAtLock;
-    int64_t globalClockAtLock;
 
 public:
     thread::id owner;
@@ -33,15 +32,18 @@ public:
         return version;
     }
 
-    bool tryLock(int rv){
+    bool tryLock(){
+        #ifndef NDEBUG
         if((locked && (owner == this_thread::get_id()))) {
             cout << "WARNING: potential lock" << endl;
         }
+        #endif
         bool res = lock.try_lock();
         if(res){
             // Acquired lock
+            #ifndef NDEBUG
             versionAtLock = getVersion();
-            globalClockAtLock = rv;
+            #endif
             owner = this_thread::get_id();
             locked = true; 
             //!!       I think it might be really important this "locked" is at the end here.
@@ -55,12 +57,6 @@ public:
 
     void unlock(int64_t new_version){
         assert(locked && (owner == this_thread::get_id()));
-        if(new_version < version){
-            cout << "new version > version " << new_version << " " << version << endl;
-            cout << "version at lock: " << versionAtLock << endl;
-            cout << "rv at lock: " << globalClockAtLock << endl;
-            assert(0);
-        }
         version = new_version;
         
         // Version is advanced every successful lock release
