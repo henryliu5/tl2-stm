@@ -110,20 +110,25 @@ void TxThread::txCommit()
 
     // 5. Validate read set
     // TODO add rv + 1 = wv optimization
-    for(intptr_t* read_addr: read_set){
-        VersionedLock* read_lock = &GET_LOCK(read_addr);
+    if(rv + 1 != wv){
+        for(intptr_t* read_addr: read_set){
+            VersionedLock* read_lock = &GET_LOCK(read_addr);
 
-        if(locks_held.find(read_lock) != locks_held.end()){
-            assert(read_lock->owner == this_thread::get_id());
-        }
+            #ifndef NDEBUG
+            if(locks_held.find(read_lock) != locks_held.end()){
+                assert(read_lock->owner == this_thread::get_id());
+            }
+            #endif
 
-        // "For each location in the read-set... the versioned-write-lock is <= rv"
-        // "We also verify memory locations have not been locked by other threads"
-        if(read_lock->getVersion() > rv || (read_lock->isLocked() && read_lock->owner != this_thread::get_id())){
-            txAbort();
-            assert(0);
+            // "For each location in the read-set... the versioned-write-lock is <= rv"
+            // "We also verify memory locations have not been locked by other threads"
+            if(read_lock->getVersion() > rv || (read_lock->isLocked() && read_lock->owner != this_thread::get_id())){
+                txAbort();
+                assert(0);
+            }
         }
     }
+
 
     // 6. Commit and release locks
     // Write back
@@ -184,8 +189,10 @@ void TxThread::txAbort()
     // global_lock.unlock();
     locks_held.clear();
     write_map.clear();
+    #ifndef NDEBUG
     wv = -1; // make it clear we can't use these until they are set later
     rv = -1;
+    #endif
     longjmp(jump_buffer, txCount);
     assert(0);
 }
