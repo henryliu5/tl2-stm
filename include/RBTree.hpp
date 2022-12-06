@@ -258,12 +258,6 @@ class RBTree {
             }
             // delete v; // TODO handle memory management
             // v->~Node();
-            STORE(v->color, RED);
-            STORE(v->val, 0);
-            STORE(v->right, NULL);
-            STORE(v->left, NULL);
-            STORE(v->parent, NULL);
-            STORE(*v, 0);
             FREE(v);
             return;
         }
@@ -276,12 +270,6 @@ class RBTree {
                 STORE(v->left, NULL);
                 STORE(v->right, NULL);
                 // delete u; // TODO handle memory management
-                STORE(u->color, RED);
-                STORE(u->val, 0);
-                STORE(u->right, NULL);
-                STORE(u->left, NULL);
-                STORE(u->parent, NULL);
-                STORE(*u, 0);
                 FREE(u);
             } else {
                 // Detach v from tree and move u up
@@ -291,12 +279,6 @@ class RBTree {
                     STORE(parent->right, u);
                 }
                 // delete v; // TODO handle memory management
-                STORE(v->color, RED);
-                STORE(v->val, 0);
-                STORE(v->right, NULL);
-                STORE(v->left, NULL);
-                STORE(v->parent, NULL);
-                STORE(*v, 0);
                 FREE(v);
                 
                 STORE(u->parent, parent);

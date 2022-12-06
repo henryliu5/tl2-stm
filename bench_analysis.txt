@@ -1,0 +1,301 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 46.76      0.36     0.36    55578     0.01     0.01  TxThread::txCommit()
+ 22.08      0.53     0.17  2788920     0.00     0.00  TxThread::txLoad(long*)
+ 12.99      0.63     0.10                             benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const
+  5.20      0.67     0.04                             benchmark(int, int, int, int, double, double, double)
+  3.90      0.70     0.03    72891     0.00     0.00  TxThread::txStore(long*, long)
+  2.60      0.72     0.02        1    20.00    20.00  void std::shuffle<__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&>(__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, __gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&)
+  1.30      0.73     0.01  2954130     0.00     0.00  TLS init function for _my_thread
+  1.30      0.74     0.01   314758     0.00     0.00  std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<VersionedLock*, false>*)
+  1.30      0.75     0.01    53649     0.00     0.01  TxThread::txEnd()
+  1.30      0.76     0.01    50366     0.00     0.00  TxThread::txBegin()
+  1.30      0.77     0.01     6121     0.00     0.00  TxThread::txFree(void*)
+  0.00      0.77     0.00  1000000     0.00     0.00  Operation& std::vector<Operation, std::allocator<Operation> >::emplace_back<Operation>(Operation&&)
+  0.00      0.77     0.00    57603     0.00     0.00  std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<std::pair<long* const, long>, false>*)
+  0.00      0.77     0.00    13005     0.00     0.00  TxThread::txMalloc(unsigned long)
+  0.00      0.77     0.00    11913     0.00     0.00  long*& std::vector<long*, std::allocator<long*> >::emplace_back<long*>(long*&&)
+  0.00      0.77     0.00     3949     0.00     0.00  TxThread::txAbort()
+  0.00      0.77     0.00     3858     0.00     0.00  TxThread::freeSpeculativeMalloc()
+  0.00      0.77     0.00     2536     0.00     0.00  RBTree::fixDoubleBlack(Node*)
+  0.00      0.77     0.00      583     0.00     0.00  std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<void*, false>*)
+  0.00      0.77     0.00       13     0.00     0.00  void std::vector<long*, std::allocator<long*> >::_M_realloc_insert<long* const&>(__gnu_cxx::__normal_iterator<long**, std::vector<long*, std::allocator<long*> > >, long* const&)
+  0.00      0.77     0.00       12     0.00     0.00  void std::vector<VersionedLock*, std::allocator<VersionedLock*> >::_M_realloc_insert<VersionedLock*>(__gnu_cxx::__normal_iterator<VersionedLock**, std::vector<VersionedLock*, std::allocator<VersionedLock*> > >, VersionedLock*&&)
+  0.00      0.77     0.00        9     0.00     0.00  std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&)
+  0.00      0.77     0.00        7     0.00     0.00  std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&)
+  0.00      0.77     0.00        3     0.00     0.00  void std::vector<void*, std::allocator<void*> >::_M_realloc_insert<void* const&>(__gnu_cxx::__normal_iterator<void**, std::vector<void*, std::allocator<void*> > >, void* const&)
+  0.00      0.77     0.00        2     0.00     0.00  std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&)
+  0.00      0.77     0.00        2     0.00     0.00  void std::vector<std::thread, std::allocator<std::thread> >::_M_realloc_insert<std::thread>(__gnu_cxx::__normal_iterator<std::thread*, std::vector<std::thread, std::allocator<std::thread> > >, std::thread&&)
+  0.00      0.77     0.00        1     0.00     0.00  _GLOBAL__sub_I__Z13hashbenchmarkiiiiddd
+  0.00      0.77     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZN8TxThread9inReadSetEm
+  0.00      0.77     0.00        1     0.00     0.00  TxThread::TxThread()
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 1.30% of 0.77 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     92.2    0.10    0.61                 benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+                0.01    0.37   53649/53649       TxThread::txEnd() [2]
+                0.17    0.00 2711667/2788920     TxThread::txLoad(long*) [4]
+                0.02    0.00   55993/72891       TxThread::txStore(long*, long) [6]
+                0.00    0.01    2536/2536        RBTree::fixDoubleBlack(Node*) [8]
+                0.01    0.00   50366/50366       TxThread::txBegin() [11]
+                0.01    0.00    6121/6121        TxThread::txFree(void*) [12]
+                0.01    0.00 2863651/2954130     TLS init function for _my_thread [9]
+                0.00    0.00   13005/13005       TxThread::txMalloc(unsigned long) [22]
+-----------------------------------------------
+                0.01    0.37   53649/53649       benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[2]     49.4    0.01    0.37   53649         TxThread::txEnd() [2]
+                0.36    0.01   55578/55578       TxThread::txCommit() [3]
+-----------------------------------------------
+                0.36    0.01   55578/55578       TxThread::txEnd() [2]
+[3]     48.1    0.36    0.01   55578         TxThread::txCommit() [3]
+                0.01    0.00  314758/314758      std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<VersionedLock*, false>*) [10]
+                0.00    0.00     715/3949        TxThread::txAbort() [24]
+-----------------------------------------------
+                0.00    0.00   77253/2788920     RBTree::fixDoubleBlack(Node*) [8]
+                0.17    0.00 2711667/2788920     benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[4]     22.1    0.17    0.00 2788920         TxThread::txLoad(long*) [4]
+                0.00    0.00    3230/3949        TxThread::txAbort() [24]
+                0.00    0.00      13/13          void std::vector<long*, std::allocator<long*> >::_M_realloc_insert<long* const&>(__gnu_cxx::__normal_iterator<long**, std::vector<long*, std::allocator<long*> > >, long* const&) [27]
+-----------------------------------------------
+                                                 <spontaneous>
+[5]      7.8    0.04    0.02                 benchmark(int, int, int, int, double, double, double) [5]
+                0.02    0.00       1/1           void std::shuffle<__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&>(__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, __gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [7]
+                0.00    0.00 1000000/1000000     Operation& std::vector<Operation, std::allocator<Operation> >::emplace_back<Operation>(Operation&&) [20]
+                0.00    0.00       2/2           void std::vector<std::thread, std::allocator<std::thread> >::_M_realloc_insert<std::thread>(__gnu_cxx::__normal_iterator<std::thread*, std::vector<std::thread, std::allocator<std::thread> > >, std::thread&&) [33]
+-----------------------------------------------
+                0.01    0.00   16898/72891       RBTree::fixDoubleBlack(Node*) [8]
+                0.02    0.00   55993/72891       benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[6]      3.9    0.03    0.00   72891         TxThread::txStore(long*, long) [6]
+                0.00    0.00   54644/57603       std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<std::pair<long* const, long>, false>*) [21]
+                0.00    0.00      12/12          void std::vector<VersionedLock*, std::allocator<VersionedLock*> >::_M_realloc_insert<VersionedLock*>(__gnu_cxx::__normal_iterator<VersionedLock**, std::vector<VersionedLock*, std::allocator<VersionedLock*> > >, VersionedLock*&&) [28]
+-----------------------------------------------
+                0.02    0.00       1/1           benchmark(int, int, int, int, double, double, double) [5]
+[7]      2.6    0.02    0.00       1         void std::shuffle<__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&>(__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, __gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [7]
+-----------------------------------------------
+                0.00    0.01    2536/2536        benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[8]      1.6    0.00    0.01    2536         RBTree::fixDoubleBlack(Node*) [8]
+                0.01    0.00   16898/72891       TxThread::txStore(long*, long) [6]
+                0.00    0.00   77253/2788920     TxThread::txLoad(long*) [4]
+                0.00    0.00   90479/2954130     TLS init function for _my_thread [9]
+-----------------------------------------------
+                0.00    0.00   90479/2954130     RBTree::fixDoubleBlack(Node*) [8]
+                0.01    0.00 2863651/2954130     benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[9]      1.3    0.01    0.00 2954130         TLS init function for _my_thread [9]
+                0.00    0.00       1/1           TxThread::TxThread() [36]
+-----------------------------------------------
+                0.01    0.00  314758/314758      TxThread::txCommit() [3]
+[10]     1.3    0.01    0.00  314758         std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<VersionedLock*, false>*) [10]
+                0.00    0.00       7/7           std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&) [30]
+-----------------------------------------------
+                0.01    0.00   50366/50366       benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[11]     1.3    0.01    0.00   50366         TxThread::txBegin() [11]
+-----------------------------------------------
+                0.01    0.00    6121/6121        benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[12]     1.3    0.01    0.00    6121         TxThread::txFree(void*) [12]
+                0.00    0.00   11913/11913       long*& std::vector<long*, std::allocator<long*> >::emplace_back<long*>(long*&&) [23]
+                0.00    0.00    2959/57603       std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<std::pair<long* const, long>, false>*) [21]
+                0.00    0.00       4/3949        TxThread::txAbort() [24]
+                0.00    0.00       2/3           void std::vector<void*, std::allocator<void*> >::_M_realloc_insert<void* const&>(__gnu_cxx::__normal_iterator<void**, std::vector<void*, std::allocator<void*> > >, void* const&) [31]
+-----------------------------------------------
+                0.00    0.00 1000000/1000000     benchmark(int, int, int, int, double, double, double) [5]
+[20]     0.0    0.00    0.00 1000000         Operation& std::vector<Operation, std::allocator<Operation> >::emplace_back<Operation>(Operation&&) [20]
+-----------------------------------------------
+                0.00    0.00    2959/57603       TxThread::txFree(void*) [12]
+                0.00    0.00   54644/57603       TxThread::txStore(long*, long) [6]
+[21]     0.0    0.00    0.00   57603         std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<std::pair<long* const, long>, false>*) [21]
+                0.00    0.00       9/9           std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&) [29]
+-----------------------------------------------
+                0.00    0.00   13005/13005       benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const [1]
+[22]     0.0    0.00    0.00   13005         TxThread::txMalloc(unsigned long) [22]
+                0.00    0.00       1/3           void std::vector<void*, std::allocator<void*> >::_M_realloc_insert<void* const&>(__gnu_cxx::__normal_iterator<void**, std::vector<void*, std::allocator<void*> > >, void* const&) [31]
+-----------------------------------------------
+                0.00    0.00   11913/11913       TxThread::txFree(void*) [12]
+[23]     0.0    0.00    0.00   11913         long*& std::vector<long*, std::allocator<long*> >::emplace_back<long*>(long*&&) [23]
+-----------------------------------------------
+                0.00    0.00       4/3949        TxThread::txFree(void*) [12]
+                0.00    0.00     715/3949        TxThread::txCommit() [3]
+                0.00    0.00    3230/3949        TxThread::txLoad(long*) [4]
+[24]     0.0    0.00    0.00    3949         TxThread::txAbort() [24]
+                0.00    0.00    3858/3858        TxThread::freeSpeculativeMalloc() [25]
+-----------------------------------------------
+                0.00    0.00    3858/3858        TxThread::txAbort() [24]
+[25]     0.0    0.00    0.00    3858         TxThread::freeSpeculativeMalloc() [25]
+                0.00    0.00     583/583         std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<void*, false>*) [26]
+-----------------------------------------------
+                0.00    0.00     583/583         TxThread::freeSpeculativeMalloc() [25]
+[26]     0.0    0.00    0.00     583         std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<void*, false>*) [26]
+                0.00    0.00       2/2           std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&) [32]
+-----------------------------------------------
+                0.00    0.00      13/13          TxThread::txLoad(long*) [4]
+[27]     0.0    0.00    0.00      13         void std::vector<long*, std::allocator<long*> >::_M_realloc_insert<long* const&>(__gnu_cxx::__normal_iterator<long**, std::vector<long*, std::allocator<long*> > >, long* const&) [27]
+-----------------------------------------------
+                0.00    0.00      12/12          TxThread::txStore(long*, long) [6]
+[28]     0.0    0.00    0.00      12         void std::vector<VersionedLock*, std::allocator<VersionedLock*> >::_M_realloc_insert<VersionedLock*>(__gnu_cxx::__normal_iterator<VersionedLock**, std::vector<VersionedLock*, std::allocator<VersionedLock*> > >, VersionedLock*&&) [28]
+-----------------------------------------------
+                0.00    0.00       9/9           std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<std::pair<long* const, long>, false>*) [21]
+[29]     0.0    0.00    0.00       9         std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&) [29]
+-----------------------------------------------
+                0.00    0.00       7/7           std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<VersionedLock*, false>*) [10]
+[30]     0.0    0.00    0.00       7         std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&) [30]
+-----------------------------------------------
+                0.00    0.00       1/3           TxThread::txMalloc(unsigned long) [22]
+                0.00    0.00       2/3           TxThread::txFree(void*) [12]
+[31]     0.0    0.00    0.00       3         void std::vector<void*, std::allocator<void*> >::_M_realloc_insert<void* const&>(__gnu_cxx::__normal_iterator<void**, std::vector<void*, std::allocator<void*> > >, void* const&) [31]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<void*, false>*) [26]
+[32]     0.0    0.00    0.00       2         std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&) [32]
+-----------------------------------------------
+                0.00    0.00       2/2           benchmark(int, int, int, int, double, double, double) [5]
+[33]     0.0    0.00    0.00       2         void std::vector<std::thread, std::allocator<std::thread> >::_M_realloc_insert<std::thread>(__gnu_cxx::__normal_iterator<std::thread*, std::vector<std::thread, std::allocator<std::thread> > >, std::thread&&) [33]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [59]
+[34]     0.0    0.00    0.00       1         _GLOBAL__sub_I__Z13hashbenchmarkiiiiddd [34]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [59]
+[35]     0.0    0.00    0.00       1         _GLOBAL__sub_I__ZN8TxThread9inReadSetEm [35]
+-----------------------------------------------
+                0.00    0.00       1/1           TLS init function for _my_thread [9]
+[36]     0.0    0.00    0.00       1         TxThread::TxThread() [36]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [34] _GLOBAL__sub_I__Z13hashbenchmarkiiiiddd [6] TxThread::txStore(long*, long) [20] Operation& std::vector<Operation, std::allocator<Operation> >::emplace_back<Operation>(Operation&&)
+  [35] _GLOBAL__sub_I__ZN8TxThread9inReadSetEm [3] TxThread::txCommit() [28] void std::vector<VersionedLock*, std::allocator<VersionedLock*> >::_M_realloc_insert<VersionedLock*>(__gnu_cxx::__normal_iterator<VersionedLock**, std::vector<VersionedLock*, std::allocator<VersionedLock*> > >, VersionedLock*&&)
+   [5] benchmark(int, int, int, int, double, double, double) [22] TxThread::txMalloc(unsigned long) [23] long*& std::vector<long*, std::allocator<long*> >::emplace_back<long*>(long*&&)
+   [8] RBTree::fixDoubleBlack(Node*) [36] TxThread::TxThread() [27] void std::vector<long*, std::allocator<long*> >::_M_realloc_insert<long* const&>(__gnu_cxx::__normal_iterator<long**, std::vector<long*, std::allocator<long*> > >, long* const&)
+  [25] TxThread::freeSpeculativeMalloc() [10] std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<VersionedLock*, false>*) [31] void std::vector<void*, std::allocator<void*> >::_M_realloc_insert<void* const&>(__gnu_cxx::__normal_iterator<void**, std::vector<void*, std::allocator<void*> > >, void* const&)
+   [2] TxThread::txEnd()      [30] std::_Hashtable<VersionedLock*, VersionedLock*, std::allocator<VersionedLock*>, std::__detail::_Identity, std::equal_to<VersionedLock*>, std::hash<VersionedLock*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&) [33] void std::vector<std::thread, std::allocator<std::thread> >::_M_realloc_insert<std::thread>(__gnu_cxx::__normal_iterator<std::thread*, std::vector<std::thread, std::allocator<std::thread> > >, std::thread&&)
+  [12] TxThread::txFree(void*) [21] std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<std::pair<long* const, long>, false>*) [7] void std::shuffle<__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&>(__gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, __gnu_cxx::__normal_iterator<Operation*, std::vector<Operation, std::allocator<Operation> > >, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&)
+   [4] TxThread::txLoad(long*) [29] std::_Hashtable<long*, std::pair<long* const, long>, std::allocator<std::pair<long* const, long> >, std::__detail::_Select1st, std::equal_to<long*>, std::hash<long*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&) [9] TLS init function for _my_thread
+  [24] TxThread::txAbort()    [26] std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<void*, false>*) [1] benchmark(int, int, int, int, double, double, double)::{lambda()#1}::operator()() const
+  [11] TxThread::txBegin()    [32] std::_Hashtable<void*, void*, std::allocator<void*>, std::__detail::_Identity, std::equal_to<void*>, std::hash<void*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_rehash(unsigned long, unsigned long const&)
