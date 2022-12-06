@@ -29,7 +29,7 @@
 
 
 #define STM_VALID()                     (1)
-#define STM_RESTART()                   TxAbort(STM_SELF)
+#define STM_RESTART()                   
 
 #define STM_STARTUP()                   
 #define STM_SHUTDOWN()                  
