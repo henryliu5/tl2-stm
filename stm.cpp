@@ -56,12 +56,11 @@ void TxThread::txBegin()
     // Reset from previous Tx
     write_map.clear();
     read_set.clear();
-    if (locks_held.size() > 0)
-        cout << "WARNING: txBegin() called but holding locks" << endl;
 
     assert(speculative_malloc.size() == 0);
     assert(speculative_free.size() == 0);
-    assert(speculative_free_locks.size() == 0);
+    assert(locks_held.size() == 0);
+    assert(required_write_locks.size() == 0);
 
     // Step 1. Sample global version-clock
     rv = global_version_clock.load();
@@ -71,48 +70,9 @@ void TxThread::txBegin()
 // Called by txEnd at the end of a transaction
 void TxThread::txCommit()
 {
-    if(debug)
-    cout << "in commit " << endl;
+    assert(inTx);
     // 3. Lock write-set
-    for (const auto& p : write_map) {
-        VersionedLock* lock = &GET_LOCK(p.first);
-        if(locks_held.find(lock) != locks_held.end()){
-            // We already own this lock
-            continue;
-        }
-
-        assert(locks_held.find(lock) == locks_held.end());
-
-        bool lock_acquired = false;
-        
-        // useconds_t delay = 100;
-        // useconds_t MAX_DELAY = 100000;
-        // Bounded spinning with exponential backoff
-        assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
-        for (int i = 0; i < 5; i++) {
-            assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
-            if (lock->tryLock(rv)) {
-                lock_acquired = true;
-                locks_held.insert(lock);
-                break;
-            } 
-            // else {
-            //     usleep(delay);
-            //     if (delay < MAX_DELAY)
-            //     {
-            //         delay *= 2;
-            //     }
-            // }
-        }
-        if (!lock_acquired) {
-            // cout << "lacquire failed " << lock << " owner: " << lock->owner << endl;
-            txAbort();
-            assert(0);
-        }
-    }
-
-    // Check that we have the locks for everything we will eventually free
-    for(VersionedLock* lock: speculative_free_locks){
+    for(VersionedLock* lock: required_write_locks){
 
         if(locks_held.find(lock) != locks_held.end()){
             // We already own this lock
@@ -161,9 +121,6 @@ void TxThread::txCommit()
         // "For each location in the read-set... the versioned-write-lock is <= rv"
         // "We also verify memory locations have not been locked by other threads"
         if(read_lock->getVersion() > rv || (read_lock->isLocked() && read_lock->owner != this_thread::get_id())){
-            // cout << "version, rv, locked, " << read_lock->getVersion() << " " << rv << " " << read_lock->isLocked() << endl;
-            // Failed validation
-            // cout << "failed validation" << endl;
             txAbort();
             assert(0);
         }
@@ -172,12 +129,11 @@ void TxThread::txCommit()
     // 6. Commit and release locks
     // Write back
     for (const auto& p : write_map) {
-        if(debug)
-        cout << "writing back addr: " << p.first << " val: " << p.second << endl;
         *(p.first) = p.second;
     }
 
     // Check that we have the locks for everything we will eventually free
+    #ifdef NDEBUG
     for(void* addr: speculative_free){
         size_t object_size = malloc_usable_size(addr);
         for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + object_size; temp ++){
@@ -191,6 +147,7 @@ void TxThread::txCommit()
             assert(lock->isLocked());
         }
     }
+    #endif
 
     for(VersionedLock* write_lock: locks_held){
         assert(wv > write_lock->getVersion());
@@ -200,12 +157,15 @@ void TxThread::txCommit()
         assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
     }
 
+    // Actually perform frees now
     for(void* addr: speculative_free){
         free(addr);
     }
+
+    // Tx complete successfully, clean up
     speculative_malloc.clear();
     speculative_free.clear();
-    speculative_free_locks.clear();
+    required_write_locks.clear();
 
     locks_held.clear();
     write_map.clear();
@@ -221,6 +181,7 @@ void TxThread::txAbort()
         // After releasing the lock, we can't be the owner anymore
         assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
     }
+    required_write_locks.clear();
     // global_lock.unlock();
     locks_held.clear();
     write_map.clear();
@@ -277,7 +238,6 @@ intptr_t TxThread::txLoad(intptr_t* addr)
 void TxThread::txStore(intptr_t* addr, intptr_t val)
 {
     assert(addr != NULL);
-
     if (!inTx) {
         *(addr) = val;
         return;
@@ -286,6 +246,7 @@ void TxThread::txStore(intptr_t* addr, intptr_t val)
     // cout << "setting addr: " << addr << " val: " << val << endl;
     // Speculative, just write to log
     write_map[addr] = val;
+    required_write_locks.push_back(&GET_LOCK(addr));
 }
 
 void* TxThread::txMalloc(size_t size)
@@ -325,16 +286,10 @@ void TxThread::txFree(void* addr)
     size_t object_size = malloc_usable_size(addr);
     // We are effectively "writing" at all byte locations in the object by freeing it - add these to the 
     // write set
-    // for(char* temp = (char*) addr; temp < (char*) addr + object_size; temp += 2){
-    //     // printf("markSSS free: %p\n", (void*) temp);
-    //     write_map[(intptr_t*) temp] = 0;
-    // }
-
     for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + object_size; temp ++){
         VersionedLock* lock = &GET_LOCK((intptr_t*) temp);
-        speculative_free_locks.push_back(lock);
+        required_write_locks.push_back(lock);
     }
-    // cout << "free mark end" <<endl;
 }
 
 void TxThread::waitForQuiesce(void* base){
@@ -362,7 +317,7 @@ void TxThread::freeSpeculativeMalloc(){
     }
     speculative_malloc.clear();
     speculative_free.clear();
-    speculative_free_locks.clear();
+    required_write_locks.clear();
 }
 
 void TxThread::freeSpeculativeFree(){

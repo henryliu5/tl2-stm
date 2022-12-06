@@ -108,7 +108,7 @@ class TxThread {
     unordered_map<intptr_t*, intptr_t> write_map;
     vector<void*> speculative_malloc;
     vector<void*> speculative_free;
-    vector<VersionedLock*> speculative_free_locks;
+    vector<VersionedLock*> required_write_locks;
     unordered_set<void*> freed;
 
     
