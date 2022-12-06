@@ -259,7 +259,7 @@ class RBTree {
             // delete v; // TODO handle memory management
             // v->~Node();
             STORE(v->color, RED);
-            STORE(v->left, NULL);
+            STORE(v->val, 0);
             STORE(v->right, NULL);
             STORE(v->left, NULL);
             STORE(v->parent, NULL);
@@ -277,7 +277,7 @@ class RBTree {
                 STORE(v->right, NULL);
                 // delete u; // TODO handle memory management
                 STORE(u->color, RED);
-                STORE(u->left, NULL);
+                STORE(u->val, 0);
                 STORE(u->right, NULL);
                 STORE(u->left, NULL);
                 STORE(u->parent, NULL);
@@ -292,7 +292,7 @@ class RBTree {
                 }
                 // delete v; // TODO handle memory management
                 STORE(v->color, RED);
-                STORE(v->left, NULL);
+                STORE(v->val, 0);
                 STORE(v->right, NULL);
                 STORE(v->left, NULL);
                 STORE(v->parent, NULL);

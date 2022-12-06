@@ -1,48 +1,70 @@
 #include "include/RBTree.hpp"
-#include "include/stm.hpp"
 #include "include/HashMap.hpp"
-#include <unordered_map>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <unordered_set>
+#include <stdlib.h>
+#include <chrono>
+#include <random>
+#include <cstdlib>
 
-void hashMap()
-{
-    HashMap m(10000);
-    TxBegin();
-    m.put(1, 1000);
-    int64_t res;
-    m.get(1, res);
-    cout << LOAD(res) << endl;
-
-    m.put(2, 100);
-    m.get(2, res);
-    TxEnd();
-    cout << res << endl;
-    
-    cout << endl;
-    int64_t res2;
-    cout << m.get(1, res2) << endl;
-    cout << "after commit: " << res2 << endl;
-    cout << m.get(2, res2) << endl;
-    cout << "after commit: " << res2 << endl;
-    cout << "num loads: " << _my_thread.numLoads << " num stores: " << _my_thread.numStores << endl;
-}
-
-void nodeOps()
-{
-    // Node testNode{1000};
-    // Node* nodePtr = &testNode;
-    // // A test to see if Tx will correctly interpose on loads and stores
-    // TxBegin();
-    // // int x;
-    // // cout << &testNode << endl;
-    // cout << LOAD(nodePtr->val) << endl;
-    // // STORE(x, (LOAD(testNode)));
-    // TxEnd();
-
-    // cout << "num loads: " << _my_thread.numLoads << " num stores: " << _my_thread.numStores << endl;
-}
+using namespace std;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 int main()
 {
-    nodeOps();
-    hashMap();
+    cout << "Starting benchmark" << endl;
+    vector<thread> workers;
+    // Spawn threads
+    void* node1_mem = malloc(sizeof(HashNode));
+    HashNode* node1 = new(node1_mem) HashNode(1, -1);
+
+    void* node2_mem = malloc(sizeof(HashNode));
+    HashNode* node2 = new(node2_mem) HashNode(2, -2);
+
+    void* node3_mem = malloc(sizeof(HashNode));
+    HashNode* node3 = new(node3_mem) HashNode(3, -3);
+
+    void* node4_mem = malloc(sizeof(HashNode));
+    HashNode* node4 = new(node4_mem) HashNode(4, -4);
+
+    node1->setNext(node2);
+    node2->setNext(node3);
+
+    workers.push_back(thread([node1]() {
+        TxBegin();
+        // Remove the second node in the list
+        HashNode* tempNext = node1->getNext();
+        HashNode* tempNextNext = tempNext->getNext();
+        node1->setNext(tempNextNext);
+        FREE(tempNext);
+        TxEnd();
+    }));
+
+    workers.push_back(thread([node1, node4]() {
+        TxBegin();
+        // Append something after the second node in the list
+        HashNode* tempNext = node1->getNext();
+        HashNode* tempNextNext = tempNext->getNext();
+        tempNext->setNext(node4);
+        node4->setNext(tempNextNext);
+        TxEnd();
+    }));
+    // Barrier
+    for_each(workers.begin(), workers.end(), [](thread& t) {
+        t.join();
+    });
+    
+    HashNode* temp = node1;
+    int size = 0;
+    while(temp != NULL){
+        size++;
+        temp = temp->getNext();
+    }
+    assert(size == 3);
 }

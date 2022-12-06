@@ -63,7 +63,6 @@ public:
     // }
 
     bool get(const int64_t &key, int64_t& value) {
-        assert(!_my_thread.inTx);
         unsigned long hashValue = key % table_size;
         HashNode* entry = (HashNode*) LOAD(table[hashValue]);
 
@@ -114,7 +113,8 @@ public:
         }
 
         if (entry == NULL) {
-            entry = new HashNode(key, value);
+            void* entryMem = MALLOC(sizeof(HashNode));
+            entry = new(entryMem) HashNode(key, value);
             if (prev == NULL) {
                 // insert as first bucket
                 STORE(table[hashValue], entry);
@@ -149,6 +149,7 @@ public:
                 prev->setNext(entry->getNext());
             }
             // delete entry; // TODO tx memory management
+            FREE(entry);
         }
     }
 

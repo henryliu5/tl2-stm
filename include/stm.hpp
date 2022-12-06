@@ -16,6 +16,7 @@ using namespace std;
 inline static atomic<int64_t> global_version_clock { 0 };
 // Global lock for testing
 inline mutex global_lock;
+inline bool debug{false};
 
 class VersionedLock {
     int64_t version;
@@ -107,6 +108,7 @@ class TxThread {
     unordered_map<intptr_t*, intptr_t> write_map;
     vector<void*> speculative_malloc;
     vector<void*> speculative_free;
+    vector<VersionedLock*> speculative_free_locks;
     unordered_set<void*> freed;
 
     void txAbort();
@@ -146,7 +148,8 @@ inline thread_local int _thread_id;
 #define LOAD(var) (_my_thread.txLoad((intptr_t*)&var))
 #define STORE(var, val) (_my_thread.txStore((intptr_t*)&var, (intptr_t)val))
 #define MALLOC(size) (_my_thread.txMalloc(size))
-#define FREE(ptr) (_my_thread.txFree(ptr))
+// #define FREE(ptr) (_my_thread.txFree(ptr))
+#define FREE(ptr) ({})
 #else
 #define LOAD(var) (var)
 #define STORE(var, val) (var = val)
