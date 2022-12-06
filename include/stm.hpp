@@ -109,7 +109,6 @@ class TxThread {
     vector<void*> speculative_malloc;
     vector<void*> speculative_free;
     vector<VersionedLock*> required_write_locks;
-    unordered_set<void*> freed;
 
     
     void txCommit();

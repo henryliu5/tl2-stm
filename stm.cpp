@@ -46,7 +46,6 @@ TxThread::TxThread()
 void TxThread::txBegin()
 {
     // cout << "begin" << endl;
-    freed.clear();
     // Profiling/misc. info
     if (inTx)
         cout << "WARNING: txBegin() called but already in Tx" << endl;
@@ -309,9 +308,7 @@ void TxThread::waitForQuiesce(void* base){
 
 void TxThread::freeSpeculativeMalloc(){
     for(void* addr: speculative_malloc){
-        assert(freed.count(addr) == 0);
         free(addr);
-        freed.insert(addr);
     }
     speculative_malloc.clear();
     speculative_free.clear();
