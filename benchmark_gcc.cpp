@@ -70,18 +70,18 @@ void hashbenchmark(int totalOps, int numThreads, int keyMin, int keyMax, double 
                 // cout << "worker " << thread_id << " doing op "  << i << "\n";
                 Operation op = ops[i];
                 if(op.op_type == PUT){
-                    TxBegin();
+                    __transaction_atomic{
                     m.put(op.key, 0);
-                    TxEnd();
+                    }
                 } else if(op.op_type == DELETE){
-                    TxBegin();
+                    __transaction_atomic{
                     m.remove(op.key);
-                    TxEnd();
+                    }
                 } else if(op.op_type == GET){
-                    TxBegin();
+                    __transaction_atomic{
                     int64_t res;
                     m.get(op.key, res);
-                    TxEnd();
+                    }
                 }
 
             }
@@ -144,17 +144,17 @@ void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts
                 // cout << "worker " << thread_id << " doing op "  << i << "\n";
                 Operation op = ops[i];
                 if(op.op_type == PUT){
-                    TxBegin();
+                    __transaction_atomic{
                     rb.insert(op.key);
-                    TxEnd();
+                    }
                 } else if(op.op_type == DELETE){
-                    TxBegin();
+                    __transaction_atomic{
                     rb.deleteKey(op.key);
-                    TxEnd();
+                    }
                 } else if(op.op_type == GET){
-                    TxBeginReadOnly();
+                    __transaction_atomic{
                     rb.get(op.key);
-                    TxEnd();
+                    }
                 }
 
             }

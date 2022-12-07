@@ -40,6 +40,7 @@ TxThread::TxThread()
 
 {
     registerSignalHandlers();
+    read_set.reserve(256);
 }
 
 // Start new transaction
@@ -51,7 +52,7 @@ void TxThread::txBegin()
         cout << "WARNING: txBegin() called but already in Tx" << endl;
     inTx = true;
     txCount++;
-    
+    delay = 0;
     // Reset from previous Tx
     write_map.clear();
     read_set.clear();
@@ -193,6 +194,13 @@ void TxThread::txAbort()
     wv = -1; // make it clear we can't use these until they are set later
     rv = -1;
     #endif
+
+    #ifdef USE_BACKOFF
+    usleep(delay);
+    if(delay < 10000) // Maximum backoff
+        delay *= 2;
+    #endif
+
     longjmp(jump_buffer, txCount);
     assert(0);
 }
@@ -218,6 +226,16 @@ intptr_t TxThread::txLoad(intptr_t* addr)
         return *addr;
     }
 
+    if(read_only){
+        intptr_t return_value = *addr;
+        VersionedLock* lock = &GET_LOCK(addr);
+        // 2. Post-validation
+        if (lock->isLocked() || lock->getVersion() > rv) {
+            txAbort();
+        }
+        return return_value;
+    }
+
     // 2. Pre-validation
     read_set.push_back(addr);
     VersionedLock* lock = &GET_LOCK(addr);
@@ -227,9 +245,10 @@ intptr_t TxThread::txLoad(intptr_t* addr)
         assert(0);
     }
 
-    if (write_map.find(addr) != write_map.end()) {
+    auto iter = write_map.find(addr);
+    if (iter != write_map.end()) {
         // cout << "getting from write map: addr " << addr << " val: " << (int64_t) write_map[addr] << endl;
-        return write_map[addr];
+        return iter->second;
     }
     intptr_t return_value = *addr;
 
@@ -249,6 +268,13 @@ void TxThread::txStore(intptr_t* addr, intptr_t val)
         return;
     }
 
+    #ifdef OPTIMISTIC_READ_ONLY
+    if(read_only){
+        read_only = false;
+        txAbort();
+    }
+    #endif
+
     // cout << "setting addr: " << addr << " val: " << val << endl;
     // Speculative, just write to log
     write_map[addr] = val;
@@ -261,6 +287,14 @@ void* TxThread::txMalloc(size_t size)
     if (!inTx) {
         return malloc(size);
     }
+
+    #ifdef OPTIMISTIC_READ_ONLY
+    if(read_only){
+        read_only = false;
+        txAbort();
+    }
+    #endif
+
     void* ptr = malloc(size);
     // read_set.push_back((intptr_t*) ptr);
     speculative_malloc.push_back(ptr);
@@ -273,6 +307,14 @@ void TxThread::txFree(void* addr)
     if (!inTx) {
         return free(addr);
     }
+
+    #ifdef OPTIMISTIC_READ_ONLY
+    if(read_only){
+        read_only = false;
+        txAbort();
+    }
+    #endif
+
     // cout << "marking free: " << addr << endl;
     // NOTE: Can't really do anything to this address, just trusting users don't have use-after-free
     // read_set.push_back((intptr_t*) addr);

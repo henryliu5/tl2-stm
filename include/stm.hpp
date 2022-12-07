@@ -133,6 +133,8 @@ public:
     int txCount;
     int numLoads;
     int numStores;
+    bool read_only;
+    useconds_t delay;
 };
 
 
@@ -155,12 +157,16 @@ inline thread_local int _thread_id;
 #define FREE(ptr) (free(ptr))
 #endif
 
-#ifdef USE_STM
-#define TxBegin() setjmp(_my_thread.jump_buffer); _my_thread.txBegin();
-#define TxEnd() (_my_thread.txEnd())
+#ifdef OPTIMISTIC_READ_ONLY // Optimistically assume that everything is read only until we get to a store
+    #define TxBegin() _my_thread.read_only = true; setjmp(_my_thread.jump_buffer); _my_thread.txBegin();
 #else
-#define TxBegin() ({})
-#define TxEnd() ({})
+    #define TxBegin() _my_thread.read_only = false; setjmp(_my_thread.jump_buffer); _my_thread.txBegin();
 #endif
+#define TxEnd() (_my_thread.txEnd())
+    #ifdef NO_RO_TX // Disable read only transactions entirely
+    #define TxBeginReadOnly() TxBegin()
+    #else
+    #define TxBeginReadOnly() _my_thread.read_only = true; setjmp(_my_thread.jump_buffer); _my_thread.txBegin();
+    #endif
 
 #endif

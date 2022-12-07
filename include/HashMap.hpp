@@ -68,10 +68,10 @@ public:
 
         while (entry != NULL) {
             if (entry->getKey() == key) {
-                STORE(value, entry->getValue());
+                value = entry->getValue();
                 return true;
             }
-            STORE(entry, entry->getNext());
+            entry = entry->getNext();
         }
         return false;
     }
