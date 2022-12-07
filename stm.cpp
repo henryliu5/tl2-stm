@@ -197,7 +197,8 @@ void TxThread::txAbort()
 
     #ifdef USE_BACKOFF
     usleep(delay);
-    delay *= 2;
+    if(delay < 10000) // Maximum backoff
+        delay *= 2;
     #endif
 
     longjmp(jump_buffer, txCount);
