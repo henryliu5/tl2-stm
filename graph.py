@@ -58,6 +58,7 @@ def create_individual_plot(ax, builds, t, c, k):
     ax.set_xlabel('Threads')
     ax.set_ylabel('1000X op/sec')
     ax.set_title(f'{t}_{c}_{k}')
+    ax.xaxis.set_ticks(np.arange(0, 33, 4))
 
 
 def create_plot_for_type(builds, t, configs, key_range):
@@ -68,8 +69,8 @@ def create_plot_for_type(builds, t, configs, key_range):
             create_individual_plot(axs[plot // 2, plot % 2], builds, t, c, k)
             plot += 1
     fig.set_size_inches(10, 8)
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.tight_layout(rect=[0, 0, 0.75, 1])
+    plt.legend(loc='center left', bbox_to_anchor=(1.05, 1))
+    plt.tight_layout(rect=[0, 0, 0.8, 1])
     fig.savefig(f'{t}_graph.png', dpi=200)
 
 def generate_main_plots():
