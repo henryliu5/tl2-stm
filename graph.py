@@ -14,8 +14,30 @@ def get_mean(path):
         return mean
     
 
-def create_individual_plot(builds, t, c, k):
-    fig, ax = plt.subplots()
+# def create_individual_plot(builds, t, c, k):
+#     fig, ax = plt.subplots()
+
+#     rename = {
+#         'bench': 'tl2-optimistic-RO',
+#         'gcc_bench' : 'gcc-stm',
+#         'no_ro_bench':  'tl2-RO-disabled',
+#         'compiled_ro_bench': 'tl2-compiled-RO',
+#         'backoff_bench': 'tl2-exp-backoff',
+#         'mutex_bench': 'mutex',
+#         'no_pv_bench': 'tl2-no-post-val'
+#     }
+#     for build in builds:
+#         num_threads = [1, 2, 4, 8, 16, 20, 32]
+#         out_dir = f'benchmarks/{t}_{c}_{k}'
+#         results = [get_mean(f'{out_dir}/{build}_{n}.txt') for n in num_threads]
+#         ax.plot(num_threads, results, label=rename[build])
+#         plt.legend(loc="lower right")
+#         ax.set_xlabel('Threads')
+#         ax.set_ylabel('1000X op/sec')
+#         ax.set_title(f'{t}_{c}_{k}')
+#     fig.savefig(f'graphs/fig_{t}_{c}_{k}.png', dpi=200)
+
+def create_individual_plot(ax, builds, t, c, k):
 
     rename = {
         'bench': 'tl2-optimistic-RO',
@@ -30,13 +52,25 @@ def create_individual_plot(builds, t, c, k):
         num_threads = [1, 2, 4, 8, 16, 20, 32]
         out_dir = f'benchmarks/{t}_{c}_{k}'
         results = [get_mean(f'{out_dir}/{build}_{n}.txt') for n in num_threads]
-        ax.plot(num_threads, results, label=rename[build])
-        plt.legend(loc="lower right")
-        ax.set_xlabel('Threads')
-        ax.set_ylabel('1000X op/sec')
-        ax.set_title(f'{t}_{c}_{k}')
-    fig.savefig(f'graphs/fig_{t}_{c}_{k}.png', dpi=200)
+        ax.plot(num_threads, results, marker='o', label=rename[build])
 
+    # plt.legend(loc="lower right")
+    ax.set_xlabel('Threads')
+    ax.set_ylabel('1000X op/sec')
+    ax.set_title(f'{t}_{c}_{k}')
+
+
+def create_plot_for_type(builds, t, configs, key_range):
+    fig, axs = plt.subplots(2, 2)
+    plot = 0
+    for c in configs:
+        for k in key_range:
+            create_individual_plot(axs[plot // 2, plot % 2], builds, t, c, k)
+            plot += 1
+    fig.set_size_inches(10, 8)
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.tight_layout(rect=[0, 0, 0.75, 1])
+    fig.savefig(f'{t}_graph.png', dpi=200)
 
 def generate_main_plots():
     builds = ['bench', 'compiled_ro_bench', 'no_ro_bench', 'backoff_bench', 'no_pv_bench', 'gcc_bench', 'mutex_bench']
@@ -46,10 +80,8 @@ def generate_main_plots():
     if not os.path.exists('graphs'):
         os.makedirs('graphs')
     for t in types:
-        for c in configs:
-            for k in key_range:
-                # Each plot will get its own output directory
-                create_individual_plot(builds, t, c, k)
+        # Each plot will get its own output directory
+        create_plot_for_type(builds, t, configs, key_range)
 
 if __name__ == '__main__':
     generate_main_plots()
