@@ -95,6 +95,7 @@ void TxThread::txCommit()
                 locks_held.insert(lock);
                 break;
             } 
+            asm("pause");
         }
         if (!lock_acquired) {
             // cout << "lacquire failed " << lock << " owner: " << lock->owner << endl;
