@@ -66,7 +66,7 @@ void TxThread::txBegin()
     assert(required_write_locks.size() == 0);
 
     // Step 1. Sample global version-clock
-    rv = global_version_clock.load();
+    rv = global_version_clock.load(memory_order_acquire);
     // global_lock.lock();
 }
 
@@ -106,7 +106,7 @@ void TxThread::txCommit()
     // assert(locks_held.size() == write_map.size()); // NOTE not true since hash collisions for address -> lock
 
     // 4. Increment global version-clock
-    int64_t old_clock = global_version_clock.fetch_add(1);
+    int64_t old_clock = global_version_clock.fetch_add(1, memory_order_release);
     wv = old_clock + 1; // fetch add returns old value
     assert(wv > rv);
 
