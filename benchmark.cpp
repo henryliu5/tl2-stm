@@ -175,7 +175,6 @@ void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts
 }
 
 int main(int argc, char** argv){
-    assert(argc == 4);
     // int numThreads = atoi(argv[1]);
     // bool smallBench = argv[2][0] == 's';
     // bool readHeavy = argv[3][0] == 'r';
@@ -233,8 +232,10 @@ int main(int argc, char** argv){
         cout << "unsupported config" << endl;
     }
 
-    if(vm.count("output-file"))
-        outfile.open(vm["output-file"].as<string>(), std::ios_base::app); // append instead of overwrite
+    if(vm.count("output-file")){
+        outfile.open(vm["output-file"].as<string>(), std::fstream::out | std::fstream::app); // append instead of overwrite
+        cout << "writing to " << vm["output-file"].as<string>() << endl;
+    }
 
     if(vm["type"].as<string>() == "hash"){
         hashbenchmark(N, numThreads, keyMin, keyMax, puts, deletes, gets);
