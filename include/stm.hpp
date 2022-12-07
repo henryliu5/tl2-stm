@@ -167,6 +167,7 @@ class TxThread {
 public:
     TxThread();
 
+    void txReset();
     void txBegin();
     void txEnd();
 
@@ -180,7 +181,8 @@ public:
     void txAbort();
 
     jmp_buf jump_buffer;
-    bool inTx; // Currently no nesting
+    bool inTx;
+    
     // Profiling
     int txCount;
     int numLoads;

@@ -50,11 +50,15 @@ void TxThread::txBegin()
     if (inTx)
         cout << "WARNING: txBegin() called but already in Tx" << endl;
     inTx = true;
-    txCount++;
     delay = 0;
+    
     // Reset from previous Tx
-    write_map.clear();
+    locks_held.clear();
     read_set.clear();
+    write_map.clear();
+    speculative_malloc.clear();
+    speculative_free.clear();
+    required_write_locks.clear();
 
     assert(speculative_malloc.size() == 0);
     assert(speculative_free.size() == 0);
@@ -163,14 +167,6 @@ void TxThread::txCommit()
     for(void* addr: speculative_free){
         free(addr);
     }
-
-    // Tx complete successfully, clean up
-    speculative_malloc.clear();
-    speculative_free.clear();
-    required_write_locks.clear();
-
-    locks_held.clear();
-    write_map.clear();
 }
 
 void TxThread::txAbort()
@@ -183,10 +179,7 @@ void TxThread::txAbort()
         // After releasing the lock, we can't be the owner anymore
         assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
     }
-    required_write_locks.clear();
     // global_lock.unlock();
-    locks_held.clear();
-    write_map.clear();
     #ifndef NDEBUG
     wv = -1; // make it clear we can't use these until they are set later
     rv = -1;
@@ -208,8 +201,6 @@ void TxThread::txEnd()
     // cout << "starting txCommit: " << txCount << endl;
     txCommit();
     inTx = false;
-    write_map.clear();
-    read_set.clear();
     // cout << "tx completed: " << txCount << endl;
     // global_lock.unlock();
 }
@@ -332,9 +323,6 @@ void TxThread::freeSpeculativeMalloc(){
     for(void* addr: speculative_malloc){
         free(addr);
     }
-    speculative_malloc.clear();
-    speculative_free.clear();
-    required_write_locks.clear();
 }
 
 void TxThread::freeSpeculativeFree(){
