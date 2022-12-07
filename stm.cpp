@@ -51,7 +51,7 @@ void TxThread::txBegin()
         cout << "WARNING: txBegin() called but already in Tx" << endl;
     inTx = true;
     txCount++;
-    
+    delay = 0;
     // Reset from previous Tx
     write_map.clear();
     read_set.clear();
@@ -193,6 +193,12 @@ void TxThread::txAbort()
     wv = -1; // make it clear we can't use these until they are set later
     rv = -1;
     #endif
+
+    #ifdef USE_BACKOFF
+    usleep(delay);
+    delay *= 2;
+    #endif
+
     longjmp(jump_buffer, txCount);
     assert(0);
 }

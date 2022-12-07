@@ -20,10 +20,17 @@ add_executable(main ${SRC_FILES})
 add_executable(stm_tests ${ALL_TEST_FILES})
 add_executable(no_stm_tests ${ALL_TEST_FILES})
 add_executable(tx_test ${TX_TEST_FILES})
-add_executable(bench ${BENCHMARK_FILES})
 
 target_compile_definitions(tx_test PUBLIC USE_STM)
 target_compile_definitions(stm_tests PUBLIC USE_STM)
+
+# Set up different benchmarks
+add_executable(bench ${BENCHMARK_FILES})
 target_compile_definitions(bench PUBLIC USE_STM)
 target_include_directories( bench PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries( bench ${Boost_LIBRARIES} )
+
+add_executable(backoff_bench ${BENCHMARK_FILES})
+target_compile_definitions(backoff_bench PUBLIC USE_STM USE_BACKOFF)
+target_include_directories( backoff_bench PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries( backoff_bench ${Boost_LIBRARIES} )
