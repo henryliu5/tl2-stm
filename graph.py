@@ -9,18 +9,29 @@ import numpy as np
 def get_mean(path):
     with open(path, 'r') as file:
         v = [float(line.rstrip()) for line in file]
-        mean = statistics.mean(v)
+        print(v, path)
+        mean = statistics.median(v)
         return mean
     
 
 def create_individual_plot(builds, t, c, k):
     fig, ax = plt.subplots()
+
+    rename = {
+        'bench': 'tl2-optimistic-RO',
+        'gcc_bench' : 'gcc-stm',
+        'no_ro_bench':  'tl2-RO-disabled',
+        'compiled_ro_bench': 'tl2-compiled-RO',
+        'backoff_bench': 'tl2-exp-backoff',
+        'mutex_bench': 'mutex',
+        'no_pv_bench': 'tl2-no-post-val'
+    }
     for build in builds:
-        num_threads = [1, 2, 4, 8, 16, 20]
+        num_threads = [1, 2, 4, 8, 16, 20, 32]
         out_dir = f'benchmarks/{t}_{c}_{k}'
         results = [get_mean(f'{out_dir}/{build}_{n}.txt') for n in num_threads]
-        ax.plot(num_threads, results, label=build)
-        plt.legend(loc="upper left")
+        ax.plot(num_threads, results, label=rename[build])
+        plt.legend(loc="lower right")
         ax.set_xlabel('Threads')
         ax.set_ylabel('1000X op/sec')
         ax.set_title(f'{t}_{c}_{k}')
@@ -28,7 +39,7 @@ def create_individual_plot(builds, t, c, k):
 
 
 def generate_main_plots():
-    builds = ['bench', 'mutex_bench', 'gcc_bench']
+    builds = ['bench', 'compiled_ro_bench', 'no_ro_bench', 'backoff_bench', 'no_pv_bench', 'gcc_bench', 'mutex_bench']
     types = ['rb', 'hash']
     configs = ['read', 'mixed']
     key_range = ['small', 'large']
