@@ -134,7 +134,6 @@ public:
     int numLoads;
     int numStores;
     bool read_only;
-    useconds_t delay;
 };
 
 
