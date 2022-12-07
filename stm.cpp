@@ -40,12 +40,12 @@ TxThread::TxThread()
 
 {
     registerSignalHandlers();
+    read_set.reserve(256);
 }
 
 // Start new transaction
 void TxThread::txBegin()
 {
-    // cout << "begin" << endl;
     // Profiling/misc. info
     if (inTx)
         cout << "WARNING: txBegin() called but already in Tx" << endl;
@@ -232,10 +232,9 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     }
 
     // 2. Pre-validation
-    read_set.push_back(addr);
     VersionedLock* lock = &GET_LOCK(addr);
     int64_t prior_version = lock->getVersion();
-    if (lock->isLocked() || prior_version > rv) {
+    if (prior_version > rv || lock->isLocked()) {
         txAbort();
         assert(0);
     }
@@ -250,9 +249,10 @@ intptr_t TxThread::txLoad(intptr_t* addr)
 
     int64_t new_version = lock->getVersion();
     // 2. Post-validation
-    if (new_version != prior_version || lock->isLocked() || new_version > rv) {
+    if (new_version > rv || new_version != prior_version || lock->isLocked()) {
         txAbort();
     }
+    read_set.push_back(addr);
     return return_value;
 }
 
