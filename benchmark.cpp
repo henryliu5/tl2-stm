@@ -38,7 +38,7 @@ typedef struct Operation {
  * @param gets Proportion of gets
  */
 void hashbenchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts, double deletes, double gets){
-    HashMap m(100000);
+    HashMap m(10000000);
     vector<Operation> ops;
     for(int i = 0; i < totalOps; i++){
         int key = (rand() % (keyMax - keyMin)) + keyMin;

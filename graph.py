@@ -16,10 +16,11 @@ def get_mean(path):
 def create_individual_plot(builds, t, c, k):
     fig, ax = plt.subplots()
     for build in builds:
-        num_threads = [1, 2, 4, 8, 16, 20, 32]
+        num_threads = [1, 2, 4, 8, 16, 20]
         out_dir = f'benchmarks/{t}_{c}_{k}'
         results = [get_mean(f'{out_dir}/{build}_{n}.txt') for n in num_threads]
         ax.plot(num_threads, results, label=build)
+        plt.legend(loc="upper left")
     fig.savefig(f'graphs/fig_{t}_{c}_{k}.png', dpi=200)
 
 
