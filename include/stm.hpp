@@ -18,6 +18,58 @@ inline static atomic<int64_t> global_version_clock { 0 };
 inline mutex global_lock;
 inline bool debug{false};
 
+// class VersionedLock {
+//     int64_t version;
+//     atomic<bool> lock;
+//     bool locked;
+//     int64_t versionAtLock;
+
+// public:
+//     thread::id owner;
+//     VersionedLock() : version{0}, lock{false}, locked{false}{}
+
+//     int64_t getVersion(){
+//         return version;
+//     }
+
+//     bool tryLock(){
+//         bool res = lock.exchange(true, memory_order_acquire);
+//         if(res){
+//             // Acquired lock
+//             #ifndef NDEBUG
+//             versionAtLock = getVersion();
+//             #endif
+//             owner = this_thread::get_id();
+//             locked = true;
+//             //!!       I think it might be really important this "locked" is at the end here.
+//             //!!       There are assertions sprinkled around that check isLocked() and check 
+//             //!!       conditions about the above fields. If the fields are changed after locked,
+//             //!!       then an assertion can see the lock is held, but get incorrect information
+//             //!!       about the lock holder.
+//         }
+//         return res;
+//     }
+
+//     void unlock(int64_t new_version){
+//         assert(lock && (owner == this_thread::get_id()));
+//         version = new_version;
+//         // Version is advanced every successful lock release
+//         lock.store(false, memory_order_release);
+//         locked = false;
+//     }
+
+//     void abortUnlock(){
+//         assert(lock && (owner == this_thread::get_id()));
+//         // Used by abort to unlock this lock without changing the version
+//         lock.store(false, memory_order_release);
+//         locked = false;
+//     }
+
+//     bool isLocked(){
+//         return locked;
+//     }
+// };
+
 class VersionedLock {
     int64_t version;
     mutex lock;
