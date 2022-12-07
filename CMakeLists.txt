@@ -34,3 +34,10 @@ add_executable(backoff_bench ${BENCHMARK_FILES})
 target_compile_definitions(backoff_bench PUBLIC USE_STM USE_BACKOFF)
 target_include_directories( backoff_bench PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries( backoff_bench ${Boost_LIBRARIES} )
+
+
+# Benchmark using gcc __transaction_atomic (on my hardware this will be STM)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fgnu-tm")
+add_executable(gcc_bench benchmark2.cpp stm.cpp)
+target_include_directories( gcc_bench PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries( gcc_bench ${Boost_LIBRARIES} )

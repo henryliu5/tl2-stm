@@ -21,11 +21,14 @@ def create_individual_plot(builds, t, c, k):
         results = [get_mean(f'{out_dir}/{build}_{n}.txt') for n in num_threads]
         ax.plot(num_threads, results, label=build)
         plt.legend(loc="upper left")
+        ax.set_xlabel('Threads')
+        ax.set_ylabel('1000X op/sec')
+        ax.set_title(f'{t}_{c}_{k}')
     fig.savefig(f'graphs/fig_{t}_{c}_{k}.png', dpi=200)
 
 
 def generate_main_plots():
-    builds = ['bench', 'mutex_bench']
+    builds = ['bench', 'mutex_bench', 'gcc_bench']
     types = ['rb', 'hash']
     configs = ['read', 'mixed']
     key_range = ['small', 'large']

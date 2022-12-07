@@ -24,7 +24,7 @@ def individual_test(trials, build, num_threads, t, c, k):
 def test_barrage():
     trials = 5
     # The N x N x ... tests
-    builds = ['bench']
+    builds = ['gcc_bench']
     num_threads = ['1', '2', '4', '8', '16', '20', '32']
     types = ['rb', 'hash']
     configs = ['read', 'mixed']
