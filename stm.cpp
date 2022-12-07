@@ -266,6 +266,13 @@ void TxThread::txStore(intptr_t* addr, intptr_t val)
         return;
     }
 
+    #ifdef OPTIMISTIC_READ_ONLY
+    if(read_only){
+        read_only = false;
+        txAbort();
+    }
+    #endif
+
     // cout << "setting addr: " << addr << " val: " << val << endl;
     // Speculative, just write to log
     write_map[addr] = val;
@@ -278,6 +285,14 @@ void* TxThread::txMalloc(size_t size)
     if (!inTx) {
         return malloc(size);
     }
+
+    #ifdef OPTIMISTIC_READ_ONLY
+    if(read_only){
+        read_only = false;
+        txAbort();
+    }
+    #endif
+
     void* ptr = malloc(size);
     // read_set.push_back((intptr_t*) ptr);
     speculative_malloc.push_back(ptr);
@@ -290,6 +305,14 @@ void TxThread::txFree(void* addr)
     if (!inTx) {
         return free(addr);
     }
+
+    #ifdef OPTIMISTIC_READ_ONLY
+    if(read_only){
+        read_only = false;
+        txAbort();
+    }
+    #endif
+
     // cout << "marking free: " << addr << endl;
     // NOTE: Can't really do anything to this address, just trusting users don't have use-after-free
     // read_set.push_back((intptr_t*) addr);

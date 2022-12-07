@@ -19,25 +19,40 @@ link_libraries(pthread)
 add_executable(main ${SRC_FILES})
 add_executable(stm_tests ${ALL_TEST_FILES})
 add_executable(no_stm_tests ${ALL_TEST_FILES})
-add_executable(tx_test ${TX_TEST_FILES})
 
-target_compile_definitions(tx_test PUBLIC USE_STM)
-target_compile_definitions(stm_tests PUBLIC USE_STM)
+target_compile_definitions(stm_tests PUBLIC USE_STM OPTIMISTIC_READ_ONLY)
 
 # Set up different benchmarks
 add_executable(bench ${BENCHMARK_FILES})
-target_compile_definitions(bench PUBLIC USE_STM)
+target_compile_definitions(bench PUBLIC USE_STM OPTIMISTIC_READ_ONLY)
 target_include_directories( bench PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries( bench ${Boost_LIBRARIES} )
 
+add_executable(compiled_ro_bench ${BENCHMARK_FILES})
+target_compile_definitions(compiled_ro_bench PUBLIC USE_STM)
+target_include_directories( compiled_ro_bench PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries( compiled_ro_bench ${Boost_LIBRARIES} )
+
+# Benchmark using no read only
+add_executable(no_ro_bench ${BENCHMARK_FILES})
+target_compile_definitions(no_ro_bench PUBLIC USE_STM NO_RO_TX)
+target_include_directories( no_ro_bench PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries( no_ro_bench ${Boost_LIBRARIES} )
+
+# Benchmark using exponential backoff
 add_executable(backoff_bench ${BENCHMARK_FILES})
 target_compile_definitions(backoff_bench PUBLIC USE_STM USE_BACKOFF)
 target_include_directories( backoff_bench PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries( backoff_bench ${Boost_LIBRARIES} )
 
+# Benchmark using global mutex
+add_executable(mutex_bench ${BENCHMARK_FILES})
+target_compile_definitions(mutex_bench PUBLIC)
+target_include_directories( mutex_bench PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries( mutex_bench ${Boost_LIBRARIES} )
 
 # Benchmark using gcc __transaction_atomic (on my hardware this will be STM)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fgnu-tm")
-add_executable(gcc_bench benchmark2.cpp stm.cpp)
+add_executable(gcc_bench benchmark_gcc.cpp stm.cpp)
 target_include_directories( gcc_bench PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries( gcc_bench ${Boost_LIBRARIES} )
