@@ -51,7 +51,7 @@ void TxThread::txBegin()
         cout << "WARNING: txBegin() called but already in Tx" << endl;
     inTx = true;
     txCount++;
-    
+    delay = 0;
     // Reset from previous Tx
     write_map.clear();
     read_set.clear();
@@ -82,9 +82,7 @@ void TxThread::txCommit()
 
         bool lock_acquired = false;
         
-        // useconds_t delay = 100;
-        // useconds_t MAX_DELAY = 100000;
-        // Bounded spinning with exponential backoff
+        // Bounded spinning
         assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
         for (int i = 0; i < 5; i++) {
             assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
@@ -192,6 +190,11 @@ void TxThread::txAbort()
     #ifndef NDEBUG
     wv = -1; // make it clear we can't use these until they are set later
     rv = -1;
+    #endif
+
+    #ifdef USE_BACKOFF
+    usleep(delay);
+    delay *= 2;
     #endif
     longjmp(jump_buffer, txCount);
     assert(0);
