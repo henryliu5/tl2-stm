@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(TL2_STM)
 
 set(CMAKE_CXX_STANDARD 17)
-# set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ofast")
 # add_definitions(-g)
 
 find_package( Boost 1.30 COMPONENTS program_options REQUIRED )
@@ -10,7 +10,6 @@ find_package( Boost 1.30 COMPONENTS program_options REQUIRED )
 set(SRC_FILES main.cpp stm.cpp)
 set(ALL_TEST_FILES tests.cpp stm.cpp)
 set(BENCHMARK_FILES benchmark.cpp stm.cpp)
-set(TX_TEST_FILES tx_test.cpp stm.cpp stm.cpp)
 
 # Global settings
 add_definitions(-Wall -Werror)
@@ -21,6 +20,11 @@ add_executable(stm_tests ${ALL_TEST_FILES})
 add_executable(no_stm_tests ${ALL_TEST_FILES})
 
 target_compile_definitions(stm_tests PUBLIC USE_STM OPTIMISTIC_READ_ONLY)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../my_tl2_lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../my_tl2_lib)
+add_library(tl2 STATIC include/stm.hpp stm.cpp my_tl2_lib/stm.h)
+target_compile_definitions(tl2 PUBLIC USE_STM)
 
 # Set up different benchmarks
 add_executable(bench ${BENCHMARK_FILES})

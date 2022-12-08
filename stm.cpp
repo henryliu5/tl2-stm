@@ -245,9 +245,10 @@ intptr_t TxThread::txLoad(intptr_t* addr)
         assert(0);
     }
 
-    if (write_map.find(addr) != write_map.end()) {
+    auto iter = write_map.find(addr);
+    if (iter != write_map.end()) {
         // cout << "getting from write map: addr " << addr << " val: " << (int64_t) write_map[addr] << endl;
-        return write_map[addr];
+        return iter->second;
     }
     intptr_t return_value = *addr;
 
