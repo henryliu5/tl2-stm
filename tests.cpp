@@ -328,7 +328,7 @@ void run_tests()
 }
 
 int main(){
-    const int TRIALS = 50;
+    const int TRIALS = 100;
     for(int i = 0; i < TRIALS; i++){
         cout << "------------ Starting trial " << i << " -----------" << endl;
         run_tests();
