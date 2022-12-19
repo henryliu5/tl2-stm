@@ -221,7 +221,6 @@ void TxThread::txEnd()
 
 intptr_t TxThread::txLoad(intptr_t* addr)
 {
-    assert(addr != NULL);
     if (!inTx) {
         return *addr;
     }
@@ -338,23 +337,6 @@ void TxThread::txFree(void* addr)
     }
 }
 
-void TxThread::waitForQuiesce(void* base){
-    assert(0);
-    // size_t object_size = malloc_usable_size(base);
-    // set<VersionedLock*> all_object_locks;
-    // for(uint64_t temp = (uint64_t) base; temp < (uint64_t) base + (uint64_t) object_size; temp++){
-    //     all_object_locks.insert(&GET_LOCK(temp));
-    // }
-    // for(VersionedLock* lock: all_object_locks){
-    //     lock->waitLock();
-    // }
-    // free(base);
-
-    // for(VersionedLock* lock: all_object_locks){
-    //     lock->unlock(global_version_clock.load());
-    // }
-}
-
 void TxThread::freeSpeculativeMalloc(){
     for(void* addr: speculative_malloc){
         free(addr);
@@ -362,37 +344,4 @@ void TxThread::freeSpeculativeMalloc(){
     speculative_malloc.clear();
     speculative_free.clear();
     required_write_locks.clear();
-}
-
-void TxThread::freeSpeculativeFree(){
-    assert(0);
-    // // Called by txCommit, actually perform frees, leave mallocs be
-    // for(void* addr: speculative_free){
-    //     assert(freed.count(addr) == 0);
-    //     VersionedLock* write_lock = &GET_LOCK((intptr_t*) addr);
-    //     assert(wv > write_lock->getVersion());
-    //     assert(write_lock->isLocked() && write_lock->owner == this_thread::get_id());
-
-    //     // // We want to make sure we invalidate all future reads
-    //     // waitForQuiesce(addr);
-    //     //!! In the paper they 'wait for objects to quiesce here'
-    //     //!! to me it is unclear what this means, or at least the literal interpretation
-    //     //!! has poor performance. The idea is to invalidate future readers and wait for writers to finish
-    //     //!! To me this means that to wait for an object to 'quiesce' it must essentially
-    //     //!! capture all locks relevant to the object
-    //     //!! Instead my approach treats the entire object as part of the write set when calling TxFree
-
-    //     size_t object_size = malloc_usable_size(addr);
-    //     for(uint64_t temp = (uint64_t) addr; temp < (uint64_t) addr + (uint64_t) object_size; temp++){
-    //         VersionedLock* write_lock = &GET_LOCK((intptr_t*) addr);
-    //         assert(locks_held.count(write_lock) == 1);
-    //         assert(wv > write_lock->getVersion());
-    //         assert(write_lock->isLocked() && write_lock->owner == this_thread::get_id());
-    //     }
-
-    //     free(addr);
-    //     freed.insert(addr);
-    // }
-    // speculative_malloc.clear();
-    // speculative_free.clear();
 }

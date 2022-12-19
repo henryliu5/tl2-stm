@@ -110,7 +110,6 @@ class TxThread {
     void txCommit();
     void freeSpeculativeMalloc();
     void freeSpeculativeFree();
-    void waitForQuiesce(void*);
     
 public:
     TxThread();
