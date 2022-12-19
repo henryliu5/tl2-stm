@@ -200,7 +200,7 @@ int main(int argc, char** argv){
     }
 
     // Num samples
-    int N = 1000000; 
+    int N = 3000000; 
     int keyMin = -1;
     int keyMax = -1;
     double puts = -1;

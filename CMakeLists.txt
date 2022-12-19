@@ -37,7 +37,7 @@ target_compile_definitions(tl2 PUBLIC USE_STM)
 
 # -------------------------- Set up different benchmarks --------------------------
 add_executable(bench ${BENCHMARK_FILES})
-target_compile_definitions(bench PUBLIC USE_STM OPTIMISTIC_READ_ONLY)
+target_compile_definitions(bench PUBLIC USE_STM)
 target_include_directories( bench PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries( bench ${Boost_LIBRARIES} )
 
