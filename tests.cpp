@@ -297,7 +297,7 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
 }
 }
 
-int main()
+void run_tests()
 {
     srand(time(NULL));
     // RB Tree tests
@@ -324,5 +324,13 @@ int main()
         exit(1);
     } else {
         cout << "\nPassed all tests" << endl;
+    }
+}
+
+int main(){
+    const int TRIALS = 50;
+    for(int i = 0; i < TRIALS; i++){
+        cout << "------------ Starting trial " << i << " -----------" << endl;
+        run_tests();
     }
 }
