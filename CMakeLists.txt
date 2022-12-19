@@ -5,6 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # add_definitions(-g)
 
+set(BENCHMARK_DOWNLOAD_DEPENDENCIES on)
+set(BENCHMARK_ENABLE_GTEST_TESTS off)
+set(BENCHMARK_ENABLE_TESTING off)
+add_subdirectory(google_benchmark)
+link_libraries(benchmark::benchmark)
+
 add_subdirectory(unordered_dense)
 link_libraries(unordered_dense::unordered_dense)
 

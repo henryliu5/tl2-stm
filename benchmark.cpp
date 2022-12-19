@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <boost/program_options.hpp>
 #include <fstream>
+#include <benchmark/benchmark.h>
+
 namespace po = boost::program_options;
 
 using namespace std;
@@ -111,7 +113,7 @@ void hashbenchmark(int totalOps, int numThreads, int keyMin, int keyMax, double 
  * @param deletes Proportion of deletes
  * @param gets Proportion of gets
  */
-void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts, double deletes, double gets){
+void rb_benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts, double deletes, double gets){
     RBTree rb;
     vector<Operation> ops;
     for(int i = 0; i < totalOps; i++){
@@ -174,7 +176,7 @@ void benchmark(int totalOps, int numThreads, int keyMin, int keyMax, double puts
     outfile << (totalOps / s_double.count()) / 1000.0 << endl;
 }
 
-int main(int argc, char** argv){
+int old_main(int argc, char** argv){
     // int numThreads = atoi(argv[1]);
     // bool smallBench = argv[2][0] == 's';
     // bool readHeavy = argv[3][0] == 'r';
@@ -238,8 +240,17 @@ int main(int argc, char** argv){
     if(vm["type"].as<string>() == "hash"){
         hashbenchmark(N, numThreads, keyMin, keyMax, puts, deletes, gets);
     } else if(vm["type"].as<string>() == "rb"){
-        benchmark(N, numThreads, keyMin, keyMax, puts, deletes, gets);
+        rb_benchmark(N, numThreads, keyMin, keyMax, puts, deletes, gets);
     } else {
         cout << "unsupported data structure type" << endl;
     }
+    return 0;
 }
+
+static void BM_MixedRBTreeLarge(benchmark::State& state) {
+  for (auto _ : state)
+    rb_benchmark(3000000, 1, 10000, 20000, 0.3, 0.3, 0.4);
+}
+BENCHMARK(BM_MixedRBTreeLarge);
+
+BENCHMARK_MAIN();

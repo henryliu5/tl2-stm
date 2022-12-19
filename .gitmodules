@@ -4,3 +4,6 @@
 [submodule "stamp-tl2"]
 	path = stamp-tl2
 	url = git@github.com:henryliu5/stamp-tl2.git
+[submodule "google_benchmark"]
+	path = google_benchmark
+	url = git@github.com:google/benchmark.git
