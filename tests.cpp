@@ -107,7 +107,6 @@ void largeRandThreads(int numInserts, int numDeletes, int numThreads)
         // Spawn threads
         for (int thread_id = 0; thread_id < numThreads; thread_id++) {
             workers.push_back(thread([&rb, thread_id, numThreads, numInserts, insert_ops]() {
-                _thread_id = thread_id;
                 for (int i = thread_id; i < numInserts; i += numThreads) {
                     TxBegin();
                     rb.insert(insert_ops[i].first);

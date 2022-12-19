@@ -23,20 +23,13 @@ public:
     int64_t version;
     mutex lock;
     bool locked;
-    thread::id owner;
 
     VersionedLock() : version{0}, lock{}, locked{false} {}
 
     bool tryLock(){
-        #ifndef NDEBUG
-        if((locked && (owner == this_thread::get_id()))) {
-            cout << "WARNING: potential lock" << endl;
-        }
-        #endif
         bool res = lock.try_lock();
         if(res){
             // Acquired lock
-            owner = this_thread::get_id();
             locked = true; 
             //!!       I think it might be really important this "locked" is at the end here.
             //!!       There are assertions sprinkled around that check isLocked() and check 
@@ -48,16 +41,13 @@ public:
     }
 
     void unlock(int64_t new_version){
-        assert(locked && (owner == this_thread::get_id()));
         version = new_version;
-        
         // Version is advanced every successful lock release
         locked = false;
         lock.unlock();
     }
 
     void abortUnlock(){
-        assert(locked && (owner == this_thread::get_id()));
         // Used by abort to unlock this lock without changing the version
         locked = false;
         lock.unlock();
@@ -81,8 +71,6 @@ class TxThread {
 
     
     void txCommit();
-    void freeSpeculativeMalloc();
-    void freeSpeculativeFree();
     
 public:
     TxThread();
@@ -113,7 +101,6 @@ public:
 // Using thread local storage for some magic here - every thread automatically
 // gets this _my_thread transactional context
 inline thread_local TxThread _my_thread;
-inline thread_local int _thread_id;
 
 // Macros for instrumenting loads and stores
 #ifdef USE_STM
