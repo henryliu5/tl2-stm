@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # add_definitions(-g)
 
+add_subdirectory(unordered_dense)
+link_libraries(unordered_dense::unordered_dense)
+# target_link_libraries(your_project_name unordered_dense::unordered_dense)
+
 find_package( Boost 1.30 COMPONENTS program_options REQUIRED )
 
 set(SRC_FILES main.cpp stm.cpp)
