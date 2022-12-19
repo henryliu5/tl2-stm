@@ -90,9 +90,9 @@ void TxThread::txCommit()
         // useconds_t delay = 100;
         // useconds_t MAX_DELAY = 100000;
         // Bounded spinning with exponential backoff
-        assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
+        assert(!(lock->locked && (lock->owner == this_thread::get_id())));
         for (int i = 0; i < 5; i++) {
-            assert(!(lock->isLocked() && (lock->owner == this_thread::get_id())));
+            assert(!(lock->locked && (lock->owner == this_thread::get_id())));
             if (lock->tryLock()) {
                 lock_acquired = true;
                 locks_held.insert(lock);
@@ -127,7 +127,7 @@ void TxThread::txCommit()
 
             // "For each location in the read-set... the versioned-write-lock is <= rv"
             // "We also verify memory locations have not been locked by other threads"
-            if(read_lock->getVersion() > rv || (read_lock->isLocked() && read_lock->owner != this_thread::get_id())){
+            if(read_lock->version > rv || (read_lock->locked && read_lock->owner != this_thread::get_id())){
                 txAbort();
                 assert(0);
             }
@@ -153,17 +153,17 @@ void TxThread::txCommit()
             }
             assert(locks_held.count(lock) == 1);
             assert(lock->owner == this_thread::get_id());
-            assert(lock->isLocked());
+            assert(lock->locked);
         }
     }
     #endif
 
     for(VersionedLock* write_lock: locks_held){
-        assert(wv > write_lock->getVersion());
-        assert(write_lock->isLocked());
+        assert(wv > write_lock->version);
+        assert(write_lock->locked);
         write_lock->unlock(wv);
         // After releasing the lock, we can't be the owner anymore
-        assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
+        assert(!write_lock->locked || write_lock->owner != this_thread::get_id());
     }
 
     // Actually perform frees now
@@ -185,10 +185,10 @@ void TxThread::txAbort()
     inTx = false;
     freeSpeculativeMalloc();
     for(VersionedLock* write_lock: locks_held){
-        assert(write_lock->isLocked());
+        assert(write_lock->locked);
         write_lock->abortUnlock();
         // After releasing the lock, we can't be the owner anymore
-        assert(!write_lock->isLocked() || write_lock->owner != this_thread::get_id());
+        assert(!write_lock->locked || write_lock->owner != this_thread::get_id());
     }
     required_write_locks.clear();
     // global_lock.unlock();
@@ -233,7 +233,7 @@ intptr_t TxThread::txLoad(intptr_t* addr)
         intptr_t return_value = *addr;
         VersionedLock* lock = &GET_LOCK(addr);
         // 2. Post-validation
-        if (lock->isLocked() || lock->getVersion() > rv) {
+        if (lock->locked || lock->version > rv) {
             txAbort();
         }
         return return_value;
@@ -242,8 +242,8 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     // 2. Pre-validation
     read_set.push_back(addr);
     VersionedLock* lock = &GET_LOCK(addr);
-    int64_t prior_version = lock->getVersion();
-    if (lock->isLocked() || prior_version > rv) {
+    int64_t prior_version = lock->version;
+    if (lock->locked || prior_version > rv) {
         txAbort();
         assert(0);
     }
@@ -255,9 +255,9 @@ intptr_t TxThread::txLoad(intptr_t* addr)
     }
     intptr_t return_value = *addr;
 
-    int64_t new_version = lock->getVersion();
+    int64_t new_version = lock->version;
     // 2. Post-validation
-    if (new_version != prior_version || lock->isLocked() || new_version > rv) {
+    if (new_version != prior_version || lock->locked || new_version > rv) {
         txAbort();
     }
     return return_value;
@@ -328,7 +328,7 @@ void TxThread::txFree(void* addr)
     VersionedLock* lock = &GET_LOCK(addr);
 
     // 2. Post-validation
-    if (lock->isLocked() || lock->getVersion() > rv) {
+    if (lock->locked || lock->version > rv) {
         txAbort();
     }
 

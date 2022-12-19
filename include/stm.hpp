@@ -19,18 +19,13 @@ inline mutex global_lock;
 inline bool debug{false};
 
 class VersionedLock {
+public:
     int64_t version;
     mutex lock;
     bool locked;
-    int64_t versionAtLock;
-
-public:
     thread::id owner;
-    VersionedLock() : version{0}, lock{}, locked{false} {}
 
-    int64_t getVersion(){
-        return version;
-    }
+    VersionedLock() : version{0}, lock{}, locked{false} {}
 
     bool tryLock(){
         #ifndef NDEBUG
@@ -41,9 +36,6 @@ public:
         bool res = lock.try_lock();
         if(res){
             // Acquired lock
-            #ifndef NDEBUG
-            versionAtLock = getVersion();
-            #endif
             owner = this_thread::get_id();
             locked = true; 
             //!!       I think it might be really important this "locked" is at the end here.
@@ -70,25 +62,6 @@ public:
         locked = false;
         lock.unlock();
     }
-
-    bool isLocked(){
-        return locked;
-    }
-
-    void waitLock(){
-        lock.lock();
-        versionAtLock = getVersion();
-        owner = this_thread::get_id();
-        locked = true; 
-    }
-
-    // void forceSetVersionUnlock(int64_t v){
-    //     version = v;
-    //     if(locked){
-    //         locked = false;
-    //         lock.unlock();
-    //     }
-    // }
 };
 
 // Per stripe lock array - basically just a hash map
