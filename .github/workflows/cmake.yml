@@ -38,7 +38,7 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: |
         ulimit -c unlimited
-        ./stm_tests
+        sudo ctest -VV -C ${{env.BUILD_TYPE}}
         ls
         
     # - uses: actions/upload-artifact@master # capture all crashes as build artifacts
