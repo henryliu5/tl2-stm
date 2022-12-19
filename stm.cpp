@@ -29,7 +29,7 @@ void registerSignalHandlers(){
     struct sigaction sig_handler;
     sig_handler.sa_sigaction = sigHandler;
     sigemptyset(&sig_handler.sa_mask);
-    sig_handler.sa_flags = SA_SIGINFO;
+    sig_handler.sa_flags = SA_SIGINFO | SA_NODEFER;
     sigaction(SIGSEGV, &sig_handler, NULL);
 }
 
