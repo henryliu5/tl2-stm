@@ -11,6 +11,7 @@
 #include <thread>
 
 #include <ankerl/unordered_dense.h>
+#include <boost/container/small_vector.hpp>
 
 using namespace std;
 
@@ -65,7 +66,7 @@ class TxThread {
     int64_t rv;
     int64_t wv;
     ankerl::unordered_dense::set<VersionedLock*> locks_held;
-    vector<intptr_t*> read_set;
+    boost::container::small_vector<intptr_t*, 256> read_set;
     ankerl::unordered_dense::map<intptr_t*, intptr_t> write_map;
     vector<void*> speculative_malloc;
     vector<void*> speculative_free;

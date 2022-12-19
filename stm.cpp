@@ -44,7 +44,6 @@ TxThread::TxThread()
 
 {
     registerSignalHandlers();
-    read_set.reserve(256);
 }
 
 // Start new transaction
