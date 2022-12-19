@@ -7,15 +7,19 @@
 #include <set>
 #include <algorithm>
 #include <signal.h>
+#include <string.h>
 
 bool TxThread::inReadSet(uint64_t addr){
     return find(read_set.begin(), read_set.end(), (intptr_t*) addr) != read_set.end();
 }
 
 
-void raceHandler(int signum, siginfo_t * sig_info, void* context){
+void sigHandler(int signum, siginfo_t * sig_info, void* context){
     uint64_t faulted_addr = (uint64_t) sig_info->si_addr;
-    psignal(signum, "Possible UAF");
+    if(write(1, "Possible UAF\n", strlen("Possible UAF\n")) < 0){
+        cout << "failed to write" << endl;
+        exit(1);
+    }
     if(_my_thread.inReadSet(faulted_addr)){
         _my_thread.txAbort();
     }
@@ -23,9 +27,9 @@ void raceHandler(int signum, siginfo_t * sig_info, void* context){
 
 void registerSignalHandlers(){
     struct sigaction sig_handler;
-    sig_handler.sa_sigaction = raceHandler;
+    sig_handler.sa_sigaction = sigHandler;
     sigemptyset(&sig_handler.sa_mask);
-    sig_handler.sa_flags = SA_SIGINFO;
+    sig_handler.sa_flags = SA_SIGINFO | SA_NODEFER;
     sigaction(SIGSEGV, &sig_handler, NULL);
 }
 
