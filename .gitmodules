@@ -1,0 +1,6 @@
+[submodule "unordered_dense"]
+	path = unordered_dense
+	url = git@github.com:martinus/unordered_dense.git
+[submodule "stamp-tl2"]
+	path = stamp-tl2
+	url = git@github.com:henryliu5/stamp-tl2.git

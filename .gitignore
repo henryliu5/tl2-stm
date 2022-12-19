@@ -1,6 +1,5 @@
 build
 .vscode
 stm
-stamp-tl2
 benchmarks
 graphs

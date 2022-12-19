@@ -10,6 +10,8 @@
 #include <iostream>
 #include <thread>
 
+#include <ankerl/unordered_dense.h>
+
 using namespace std;
 
 // Put globals here, e.g. global version clock, PS lock array
@@ -62,9 +64,9 @@ inline VersionedLock PSLocks[NUM_LOCKS];
 class TxThread {
     int64_t rv;
     int64_t wv;
-    unordered_set<VersionedLock*> locks_held;
+    ankerl::unordered_dense::set<VersionedLock*> locks_held;
     vector<intptr_t*> read_set;
-    unordered_map<intptr_t*, intptr_t> write_map;
+    ankerl::unordered_dense::map<intptr_t*, intptr_t> write_map;
     vector<void*> speculative_malloc;
     vector<void*> speculative_free;
     vector<VersionedLock*> required_write_locks;
