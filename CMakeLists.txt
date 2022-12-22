@@ -19,6 +19,7 @@ find_package( Boost 1.30 COMPONENTS program_options REQUIRED )
 set(SRC_FILES main.cpp stm.cpp)
 set(ALL_TEST_FILES tests.cpp stm.cpp)
 set(BENCHMARK_FILES benchmark.cpp stm.cpp)
+set(GOOGLE_BENCHMARK_FILES google_benchmark.cpp stm.cpp)
 
 # Global settings
 add_definitions(-Wall -Werror)
@@ -42,6 +43,11 @@ add_library(tl2 STATIC include/stm.hpp stm.cpp my_tl2_lib/stm.h)
 target_compile_definitions(tl2 PUBLIC USE_STM)
 
 # -------------------------- Set up different benchmarks --------------------------
+add_executable(gbench ${GOOGLE_BENCHMARK_FILES})
+target_compile_definitions(gbench PUBLIC USE_STM OPTIMISTIC_READ_ONLY)
+target_include_directories( gbench PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries( gbench ${Boost_LIBRARIES} )
+
 add_executable(bench ${BENCHMARK_FILES})
 target_compile_definitions(bench PUBLIC USE_STM OPTIMISTIC_READ_ONLY)
 target_include_directories( bench PRIVATE ${Boost_INCLUDE_DIR})
